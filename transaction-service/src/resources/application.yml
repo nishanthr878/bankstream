@@ -1,0 +1,47 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: transaction-service
+
+  # Postgres connection
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bankstream
+    username: bankstream
+    password: bankstream
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate      # validates schema against DB, never modifies it
+    show-sql: true            # logs SQL — useful for learning, disable in prod
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  kafka:
+    bootstrap-servers: localhost:29092,localhost:29094
+    producer:
+      # Wait for all ISR replicas to acknowledge
+      acks: all
+      # Retry up to 3 times on transient failures
+      retries: 3
+      # Deduplicate retries — no duplicate messages on retry
+      enable-idempotence: true
+      # Batch up to 32KB before sending
+      batch-size: 32768
+      # Wait 5ms to accumulate more messages into a batch
+      # Improves throughput at slight latency cost
+      properties:
+        linger.ms: 5
+        # Required for idempotent producer
+        max.in.flight.requests.per.connection: 5
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+logging:
+  level:
+    com.bankstream: DEBUG
+    org.apache.kafka: WARN   # Kafka internals are noisy, suppress below WARN
