@@ -1,9 +1,13 @@
 com\bankstream\transaction\repository\TransactionRepository.class
 com\bankstream\transaction\controller\TransactionController.class
+com\bankstream\transaction\domain\Outbox.class
 com\bankstream\transaction\event\TransactionInitiatedEvent$TransactionInitiatedEventBuilder.class
+com\bankstream\transaction\repository\OutboxRepository.class
 com\bankstream\transaction\domain\TransactionStatus.class
 com\bankstream\transaction\controller\TransactionController$InitiateTransactionRequest.class
+com\bankstream\transaction\domain\Outbox$OutboxBuilder.class
 com\bankstream\transaction\domain\TransactionType.class
+com\bankstream\transaction\outbox\OutboxPoller.class
 com\bankstream\transaction\producer\TransactionProducer.class
 com\bankstream\transaction\TransactionServiceApplication.class
 com\bankstream\transaction\service\TransactionService.class
