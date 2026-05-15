@@ -1,46 +1,126 @@
+# Docker Compose file for BankStream project
+# Sets up a 2-broker Kafka cluster (KRaft mode), Schema Registry, Kafka UI, and Postgres
+# Architecture: kafka1 = controller + broker, kafka2 = broker only
+
 services:
+
+  # ============================================================
+  # KAFKA BROKER 1 — Acts as both Controller and Broker
+  # Controller: handles leader election, cluster metadata (KRaft)
+  # Broker: handles producer/consumer requests, stores data
+  # ============================================================
   kafka1:
     image: confluentinc/cp-kafka:7.6.0
     container_name: bankstream-kafka1
     ports:
+      # 9092: internal Docker network port (used by other containers)
+      # 29092: host machine port (used by apps running on Windows/WSL2)
       - "9092:9092"
       - "29092:29092"
     environment:
+      # Unique ID for this node in the cluster
       KAFKA_NODE_ID: 1
+
+      # This node plays both roles:
+      # broker — serves producers/consumers
+      # controller — runs Raft consensus, manages cluster metadata
       KAFKA_PROCESS_ROLES: broker,controller
+
+      # Three listeners on three ports:
+      # PLAINTEXT:9092      — for other Docker containers (internal traffic)
+      # CONTROLLER:9093     — for Raft controller-to-controller communication (never exposed)
+      # PLAINTEXT_HOST:29092 — for host machine clients (your Spring Boot app, tools)
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,PLAINTEXT_HOST://0.0.0.0:29092
+
+      # What address Kafka tells clients to use after they connect
+      # Internal clients get kafka1:9092, host clients get localhost:29092
+      # If this is wrong, clients connect but then can't reach the broker
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092,PLAINTEXT_HOST://localhost:29092
+
+      # Maps each listener name to a security protocol
+      # All PLAINTEXT here (no TLS/auth) — fine for local dev
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+
+      # Raft quorum: only kafka1 (node 1) is a voter/controller
+      # Format: nodeId@host:port
+      # kafka2 is broker-only so it's NOT listed here
+      # In production with 3 nodes: 1@kafka1:9093,2@kafka2:9093,3@kafka3:9093
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka1:9093
+
+      # Which listener name handles controller (Raft) traffic
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      # Which listener brokers use to replicate data between each other
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      # __consumer_offsets topic replication factor
+      # 2 = replicated across both brokers, survives kafka1 or kafka2 going down
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+
+      # __transaction_state topic replication factor (for exactly-once producers)
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+
+      # Minimum ISR for transaction log
+      # 1 = allow commits even if only 1 replica is in sync
+      # Set to 2 in production for stronger guarantees
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+      # Disabled: prevents silent topic creation on typos
+      # All topics must be created explicitly with correct partition/replication config
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+
+      # Where Kafka stores segment files, indexes, and metadata on disk
       KAFKA_LOG_DIRS: /var/lib/kafka/data
+
+      # Pre-generated cluster UUID required by KRaft before first boot
+      # Must be identical across all brokers in the same cluster
+      # Never change this after the cluster has started — it's baked into data dirs
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+
     volumes:
+      # Persist Kafka data across container restarts
       - kafka1-data:/var/lib/kafka/data
+
     healthcheck:
+      # Checks if the broker is accepting API requests
+      # Other containers wait for this before starting
       test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
       interval: 10s
       timeout: 10s
       retries: 10
 
+
+  # ============================================================
+  # KAFKA BROKER 2 — Broker only (no controller role)
+  # Handles producer/consumer requests and holds replica partitions
+  # Depends on kafka1 being healthy first (kafka1 must elect itself
+  # as controller before kafka2 can register as a broker)
+  # ============================================================
   kafka2:
     image: confluentinc/cp-kafka:7.6.0
     container_name: bankstream-kafka2
     ports:
+      # Different ports from kafka1 — both brokers on the same host
+      # 9094: internal Docker network port
+      # 29094: host machine port
       - "9094:9094"
       - "29094:29094"
     environment:
       KAFKA_NODE_ID: 2
+
+      # broker only — no controller role
+      # kafka2 does NOT participate in Raft leader election
       KAFKA_PROCESS_ROLES: broker
+
+      # No CONTROLLER listener needed — kafka2 is not a controller
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094,PLAINTEXT_HOST://0.0.0.0:29094
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9094,PLAINTEXT_HOST://localhost:29094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+
+      # Still needs to know where the controller is to register itself
+      # Points to kafka1 as the sole controller
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka1:9093
+
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
@@ -48,48 +128,89 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
       KAFKA_LOG_DIRS: /var/lib/kafka/data
+
+      # Must be the same cluster ID as kafka1
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+
     volumes:
       - kafka2-data:/var/lib/kafka/data
+
+    # kafka2 must wait for kafka1 to be healthy
+    # Reason: kafka1 must elect itself as controller first
+    # Only then can kafka2 register as a broker with the controller
     depends_on:
       kafka1:
         condition: service_healthy
+
     healthcheck:
       test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9094"]
       interval: 10s
       timeout: 10s
       retries: 10
 
+
+  # ============================================================
+  # SCHEMA REGISTRY
+  # Stores and enforces Avro schemas for Kafka topics
+  # Uses Kafka itself (_schemas topic) as its storage backend
+  # Exposes a REST API on port 8081
+  # ============================================================
   schema-registry:
     image: confluentinc/cp-schema-registry:7.6.0
     container_name: bankstream-schema-registry
     ports:
       - "8081:8081"
     environment:
+      # Hostname this instance advertises — must match container name
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
+
+      # Schema Registry stores schemas in a Kafka topic called _schemas
+      # Points to both brokers for redundancy
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka1:9092,kafka2:9094
+
+      # Expose REST API on all interfaces inside the container
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+
+    # Must wait for both brokers — needs Kafka available to access _schemas topic
     depends_on:
       kafka1:
         condition: service_healthy
       kafka2:
         condition: service_healthy
+
     healthcheck:
+      # /subjects returns list of registered schemas — 200 means SR is ready
       test: ["CMD", "curl", "-f", "http://localhost:8081/subjects"]
       interval: 10s
       timeout: 10s
       retries: 5
 
+
+  # ============================================================
+  # KAFKA UI (Provectus)
+  # Lightweight web UI to inspect topics, partitions, consumer
+  # groups, offsets, messages, and schemas
+  # Access at http://localhost:8080
+  # ============================================================
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: bankstream-kafka-ui
     ports:
       - "8080:8080"
     environment:
+      # Allows runtime config changes without restart
       DYNAMIC_CONFIG_ENABLED: 'true'
+
+      # Cluster display name in the UI
       KAFKA_CLUSTERS_0_NAME: bankstream
+
+      # Both brokers listed — UI can reach cluster even if one broker is down
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:9092,kafka2:9094
+
+      # Connects UI to Schema Registry to display Avro schemas per topic
       KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+
+    # Waits for both brokers and schema registry before starting
     depends_on:
       kafka1:
         condition: service_healthy
@@ -98,6 +219,13 @@ services:
       schema-registry:
         condition: service_healthy
 
+
+  # ============================================================
+  # POSTGRES 16
+  # Stores: accounts, transactions, outbox, processed_events,
+  # fraud_alerts tables
+  # init.sql runs automatically on first boot
+  # ============================================================
   postgres:
     image: postgres:16-alpine
     container_name: bankstream-postgres
@@ -108,7 +236,9 @@ services:
       POSTGRES_USER: bankstream
       POSTGRES_PASSWORD: bankstream
     volumes:
+      # Persist data across restarts
       - postgres-data:/var/lib/postgresql/data
+      # init.sql runs once on first boot to create tables and seed data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U bankstream"]
@@ -116,6 +246,9 @@ services:
       timeout: 5s
       retries: 5
 
+
+# Named volumes — managed by Docker, persist across container restarts
+# To wipe everything and start fresh: docker compose down -v
 volumes:
   kafka1-data:
   kafka2-data:
