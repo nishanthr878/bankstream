@@ -1,0 +1,50 @@
+server:
+  port: 8091
+
+spring:
+  application:
+    name: notification-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bankstream
+    username: bankstream
+    password: bankstream
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  kafka:
+    bootstrap-servers: localhost:29092,localhost:29094
+    consumer:
+      # Identifies this consumer group
+      # All instances of notification-service share this group
+      # Kafka distributes partitions across all instances in the group
+      group-id: notification-service
+      # Start from earliest unread message on first run
+      # If group has no committed offset, don't skip messages
+      auto-offset-reset: earliest
+      # We commit manually after processing
+      # Auto-commit would commit before processing completes
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        # Allow deserializing any package — needed for our event classes
+        spring.json.trusted.packages: "*"
+    producer:
+      acks: all
+      retries: 3
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+logging:
+  level:
+    com.bankstream: DEBUG
+    org.apache.kafka: WARN

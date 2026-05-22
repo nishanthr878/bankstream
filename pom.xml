@@ -13,6 +13,7 @@
     <!-- Child modules — add more as we build them -->
     <modules>
         <module>transaction-service</module>
+        <module>notification-service</module>
     </modules>
 
     <!-- All child modules inherit Spring Boot parent -->
