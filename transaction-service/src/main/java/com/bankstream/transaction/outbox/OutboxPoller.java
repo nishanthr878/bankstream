@@ -5,6 +5,7 @@ import com.bankstream.transaction.repository.OutboxRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -14,11 +15,20 @@ import java.util.List;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
+
 public class OutboxPoller {
 
     private final OutboxRepository outboxRepository;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    // Use String template - payload is already serialized JSON string
+    // Using Object template would double-serialize it
+    private final KafkaTemplate<String, String> stringKafkaTemplate;
+
+    public OutboxPoller(
+            OutboxRepository outboxRepository,
+            @Qualifier("stringKafkaTemplate") KafkaTemplate<String, String> stringKafkaTemplate) {
+        this.outboxRepository = outboxRepository;
+        this.stringKafkaTemplate = stringKafkaTemplate;
+    }
 
     private static final int MAX_RETRY = 5;
 
@@ -39,7 +49,7 @@ public class OutboxPoller {
             try {
                 // Synchronous send — we need confirmation before marking published
                 // If Kafka is down this throws, we catch below and increment retry
-                kafkaTemplate.send(
+                stringKafkaTemplate.send(
                         entry.getTopic(),
                         entry.getPartitionKey(),
                         entry.getPayload()

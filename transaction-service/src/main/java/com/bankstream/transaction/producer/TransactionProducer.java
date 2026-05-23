@@ -3,6 +3,7 @@ package com.bankstream.transaction.producer;
 import com.bankstream.transaction.event.TransactionInitiatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
@@ -11,12 +12,19 @@ import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
+
 public class TransactionProducer {
+
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    public TransactionProducer(
+            @Qualifier("objectKafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
     private static final String TOPIC = "transaction.initiated";
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+
 
     public void publishTransactionInitiated(TransactionInitiatedEvent event) {
         // Partition key = accountId
