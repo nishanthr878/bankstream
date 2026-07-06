@@ -1,0 +1,49 @@
+{
+  "type": "record",
+  "name": "TransactionInitiatedEvent",
+  "namespace": "com.bankstream.transaction.event.avro",
+  "doc": "Event published when a transaction is initiated",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "Unique event ID — used as idempotency key by consumers"
+    },
+    {
+      "name": "transactionId",
+      "type": "string",
+      "doc": "ID of the transaction in the transactions table"
+    },
+    {
+      "name": "accountId",
+      "type": "string",
+      "doc": "ID of the account — used as Kafka partition key"
+    },
+    {
+      "name": "amount",
+      "type": "double",
+      "doc": "Transaction amount"
+    },
+    {
+      "name": "currency",
+      "type": "string",
+      "doc": "ISO currency code e.g. INR"
+    },
+    {
+      "name": "type",
+      "type": "string",
+      "doc": "DEBIT or CREDIT"
+    },
+    {
+      "name": "description",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Optional transaction description — null union makes it optional"
+    },
+    {
+      "name": "occurredAt",
+      "type": "long",
+      "doc": "Event timestamp as epoch milliseconds"
+    }
+  ]
+}

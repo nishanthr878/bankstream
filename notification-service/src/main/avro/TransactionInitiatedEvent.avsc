@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "name": "TransactionInitiatedEvent",
+  "namespace": "com.bankstream.transaction.event.avro",
+  "doc": "Event published when a transaction is initiated",
+  "fields": [
+    {"name": "eventId",       "type": "string"},
+    {"name": "transactionId", "type": "string"},
+    {"name": "accountId",     "type": "string"},
+    {"name": "amount",        "type": "double"},
+    {"name": "currency",      "type": "string"},
+    {"name": "type",          "type": "string"},
+    {"name": "description",   "type": ["null", "string"], "default": null},
+    {"name": "occurredAt",    "type": "long"}
+  ]
+}

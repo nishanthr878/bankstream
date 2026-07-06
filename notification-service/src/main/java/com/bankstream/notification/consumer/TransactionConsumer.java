@@ -1,10 +1,10 @@
 package com.bankstream.notification.consumer;
 
+import com.bankstream.transaction.event.avro.TransactionInitiatedEvent;
 import com.bankstream.notification.dlq.DlqProducer;
 import com.bankstream.notification.domain.ProcessedEvent;
 import com.bankstream.notification.repository.ProcessedEventRepository;
 import com.bankstream.notification.service.NotificationService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -13,12 +13,10 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class TransactionConsumer {
 
     private static final String GROUP_ID = "notification-service";
@@ -28,44 +26,43 @@ public class TransactionConsumer {
     private final ProcessedEventRepository processedEventRepository;
     private final DlqProducer dlqProducer;
 
+    public TransactionConsumer(NotificationService notificationService,
+                               ProcessedEventRepository processedEventRepository,
+                               DlqProducer dlqProducer) {
+        this.notificationService = notificationService;
+        this.processedEventRepository = processedEventRepository;
+        this.dlqProducer = dlqProducer;
+    }
+
     @KafkaListener(
             topics = "transaction.initiated",
             groupId = GROUP_ID,
             containerFactory = "kafkaListenerContainerFactory"
     )
-    public void consume(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+    public void consume(ConsumerRecord<String, Object> record,
+                        Acknowledgment acknowledgment) {
+
         String key = record.key();
         Object value = record.value();
         int partition = record.partition();
         long offset = record.offset();
 
-        log.debug("Received message key = {} partition = {} offset={}", key, partition, offset);
+        log.debug("Received message key={} partition={} offset={}", key, partition, offset);
 
-        // Value comes in as LinkedHashMap when deserialized from JSON without type info
-        if (!(value instanceof Map)) {
+        // With Avro + specific.avro.reader=true, value is already a typed object
+        if (!(value instanceof TransactionInitiatedEvent)) {
             log.error("Unexpected message type: {}, routing to DLQ", value.getClass());
             dlqProducer.sendToDlq(key, value, "Unexpected message type");
-            acknowledgment.acknowledge(); // ack to move past this poison pill
-            return;
-        }
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> event = (Map<String, Object>) value;
-
-        // Extract eventId for idempotency check
-        String eventIdStr = (String) event.get("eventId");
-        if (eventIdStr == null) {
-            log.error("Message missing eventId, routing to DLQ");
-            dlqProducer.sendToDlq(key, value, "Missing eventId");
             acknowledgment.acknowledge();
             return;
         }
 
-        UUID eventId = UUID.fromString(eventIdStr);
+        TransactionInitiatedEvent event = (TransactionInitiatedEvent) value;
 
-        // Idempotency check — have we already processed this event?
-        // processedEventRepository.existsById uses the primary key lookup
-        // If yes: skip processing, still ack to move the offset forward
+        // eventId is now a String directly — no map.get() needed
+        UUID eventId = UUID.fromString(event.getEventId());
+
+        // Idempotency check
         if (processedEventRepository.existsById(eventId)) {
             log.info("Duplicate event {} detected, skipping", eventId);
             acknowledgment.acknowledge();
@@ -73,16 +70,12 @@ public class TransactionConsumer {
         }
 
         // Retry loop with exponential backoff
-        // We retry inside the consumer before giving up and routing to DLQ
-        // This handles transient failures (network blip, downstream timeout)
         Exception lastException = null;
         for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
             try {
-                // Attempt to send notification
+                // Pass typed Avro object directly — no more map casting
                 notificationService.sendTransactionNotification(event);
 
-                // Success — mark as processed in DB
-                // If this fails (DB down), we don't ack → message redelivered → idempotent
                 try {
                     processedEventRepository.save(
                             ProcessedEvent.builder()
@@ -92,15 +85,16 @@ public class TransactionConsumer {
                                     .build()
                     );
                 } catch (DataIntegrityViolationException e) {
-                    // Another instance already processed this event simultaneously
-                    // Primary key violation — safe to ignore, idempotency holds
-                    log.info("Race condition: event {} already processed by another instance", eventId);
+                    log.info("Race condition: event {} already processed", eventId);
                 }
 
-                // Commit offset — only after successful processing AND DB write
                 acknowledgment.acknowledge();
-                log.debug("Successfully processed event {} partition = {} offset={}",
+                log.debug("Successfully processed event {} partition={} offset={}",
                         eventId, partition, offset);
+                return;
+
+            } catch (DataIntegrityViolationException e) {
+                acknowledgment.acknowledge();
                 return;
             } catch (Exception e) {
                 lastException = e;
@@ -109,11 +103,8 @@ public class TransactionConsumer {
 
                 if (attempt < MAX_RETRIES) {
                     try {
-                        // Exponential backoff: 1s, 2s, 4s
-                        // Gives downstream time to recover before next attempt
-                        long backoofMs = (long) Math.pow(2, attempt - 1) * 1000;
-                        log.debug("Backing off {}ms before retry", backoofMs);
-                        Thread.sleep(backoofMs);
+                        long backoffMs = (long) Math.pow(2, attempt - 1) * 1000;
+                        Thread.sleep(backoffMs);
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
                         break;
@@ -122,14 +113,9 @@ public class TransactionConsumer {
             }
         }
 
-        // All retries exhausted — route to DLQ
-        // Still ack the original message so consumer moves forward
-        // The DLQ holds the message for manual inspection/replay
         log.error("All {} retries exhausted for event {}, routing to DLQ",
                 MAX_RETRIES, eventId);
         dlqProducer.sendToDlq(key, value, lastException.getMessage());
         acknowledgment.acknowledge();
-
     }
-
 }

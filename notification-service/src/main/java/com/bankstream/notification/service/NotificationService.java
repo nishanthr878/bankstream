@@ -1,30 +1,24 @@
 package com.bankstream.notification.service;
 
+import com.bankstream.transaction.event.avro.TransactionInitiatedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 @Slf4j
 @Service
 public class NotificationService {
 
-    // Simulates sending a notification (email, SMS, push)
-    // In production this calls an email provider, SMS gateway etc.
-    // We simulate failure for certain amounts to test retry + DLQ
-    public void sendTransactionNotification(Map<String, Object> event) {
-        Object amount = event.get("amount");
-        Object accountId = event.get("accountId");
+    public void sendTransactionNotification(TransactionInitiatedEvent event) {
+        double amount = event.getAmount();
 
-        // Simulate failure for amounts ending in .99 — for testing DLQ
-        if (amount != null && amount.toString().endsWith(".99")) {
+        // Simulate failure for amounts ending in .99 — for DLQ testing
+        if (String.valueOf(amount).endsWith(".99")) {
             throw new RuntimeException(
                     "Simulated notification failure for amount: " + amount
             );
         }
 
-        // Happy path — log the notification
-        log.info("Notification sent: Account {} transaction for amount {}",
-                accountId, amount);
+        log.info("Notification sent: Account {} transaction for amount {} {}",
+                event.getAccountId(), event.getCurrency(), event.getAmount());
     }
 }

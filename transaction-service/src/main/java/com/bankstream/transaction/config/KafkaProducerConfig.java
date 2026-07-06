@@ -1,5 +1,7 @@
 package com.bankstream.transaction.config;
 
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +20,11 @@ public class KafkaProducerConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
+
+    @Value("${spring.kafka.producer.properties.schema.registry.url}")
+    private String schemaRegistryUrl;
+
+
 
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
@@ -59,6 +66,24 @@ public class KafkaProducerConfig {
     }
 
     @Bean
+    public ProducerFactory<String, Object> avroProducerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ProducerConfig.ACKS_CONFIG, "all");
+        props.put(ProducerConfig.RETRIES_CONFIG, 3);
+        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+        props.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 5);
+        props.put(ProducerConfig.BATCH_SIZE_CONFIG, 32768);
+        props.put(ProducerConfig.LINGER_MS_CONFIG, 5);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        // KafkaAvroSerializer — serializes SpecificRecord to binary Avro + registers schema
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+        // Points to our Schema Registry container
+        props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
+        return new DefaultKafkaProducerFactory<>(props);
+    }
+
+    @Bean
     public ProducerFactory<String, String> stringProducerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -78,6 +103,11 @@ public class KafkaProducerConfig {
     @Bean("objectKafkaTemplate")
     public KafkaTemplate<String, Object> objectKafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
+    }
+
+    @Bean("avroKafkaTemplate")
+    public KafkaTemplate<String, Object> avroKafkaTemplate() {
+        return new KafkaTemplate<>(avroProducerFactory());
     }
 
     @Bean("stringKafkaTemplate")

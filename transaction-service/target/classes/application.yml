@@ -38,8 +38,13 @@ spring:
         linger.ms: 5
         # Required for idempotent producer
         max.in.flight.requests.per.connection: 5
+        # Schema Registry URL - producer registers schema on first publish
+        schema.registry.url: http://localhost:8081
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+      #value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      # Switch from JsonSerilazier to KafkaAvroSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
 
 logging:
   level:

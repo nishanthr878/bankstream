@@ -1,6 +1,6 @@
 package com.bankstream.transaction.producer;
 
-import com.bankstream.transaction.event.TransactionInitiatedEvent;
+import com.bankstream.transaction.event.avro.TransactionInitiatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,14 +15,16 @@ import java.util.concurrent.CompletableFuture;
 
 public class TransactionProducer {
 
+    private static final String TOPIC = "transaction.initiated";
+
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public TransactionProducer(
-            @Qualifier("objectKafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate) {
+            @Qualifier("avroKafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    private static final String TOPIC = "transaction.initiated";
+
 
 
 
@@ -30,7 +32,7 @@ public class TransactionProducer {
         // Partition key = accountId
         // All transactions for the same account go to the same partition
         // Guarantees ordering per account
-        String partitionKey = event.getAccountId().toString();
+        String partitionKey = event.getAccountId();
 
         CompletableFuture<SendResult<String, Object>> future =
                 kafkaTemplate.send(TOPIC, partitionKey, event);
