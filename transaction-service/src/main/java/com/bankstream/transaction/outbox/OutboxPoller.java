@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.Base64;
 import java.util.List;
 
 @Slf4j
@@ -21,13 +22,13 @@ public class OutboxPoller {
     private final OutboxRepository outboxRepository;
     // Use String template - payload is already serialized JSON string
     // Using Object template would double-serialize it
-    private final KafkaTemplate<String, String> stringKafkaTemplate;
+    private final KafkaTemplate<String, byte[]> bytesKafkaTemplate;
 
     public OutboxPoller(
             OutboxRepository outboxRepository,
-            @Qualifier("stringKafkaTemplate") KafkaTemplate<String, String> stringKafkaTemplate) {
+            @Qualifier("bytesKafkaTemplate") KafkaTemplate<String, byte[]> bytesKafkaTemplate) {
         this.outboxRepository = outboxRepository;
-        this.stringKafkaTemplate = stringKafkaTemplate;
+        this.bytesKafkaTemplate = bytesKafkaTemplate;
     }
 
     private static final int MAX_RETRY = 5;
@@ -47,12 +48,14 @@ public class OutboxPoller {
 
         for (Outbox entry : unpublished) {
             try {
-                // Synchronous send — we need confirmation before marking published
-                // If Kafka is down this throws, we catch below and increment retry
-                stringKafkaTemplate.send(
+                String base64 = entry.getPayload().replaceAll("^\"|\"$", "");
+                byte[] avroBytes = Base64.getDecoder().decode(base64);
+
+
+                bytesKafkaTemplate.send(
                         entry.getTopic(),
                         entry.getPartitionKey(),
-                        entry.getPayload()
+                        avroBytes
                 ).get(); // blocks until broker acks
 
                 // Mark published — same DB transaction

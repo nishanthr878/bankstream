@@ -15,10 +15,10 @@ import org.apache.avro.message.SchemaStore;
 /** Event published when a transaction is initiated */
 @org.apache.avro.specific.AvroGenerated
 public class TransactionInitiatedEvent extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 1796279275023737433L;
+  private static final long serialVersionUID = -9158916236502510233L;
 
 
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"TransactionInitiatedEvent\",\"namespace\":\"com.bankstream.transaction.event.avro\",\"doc\":\"Event published when a transaction is initiated\",\"fields\":[{\"name\":\"eventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"transactionId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"accountId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"amount\",\"type\":\"double\"},{\"name\":\"currency\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"type\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"description\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null},{\"name\":\"occurredAt\",\"type\":\"long\"}]}");
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"TransactionInitiatedEvent\",\"namespace\":\"com.bankstream.transaction.event.avro\",\"doc\":\"Event published when a transaction is initiated\",\"fields\":[{\"name\":\"eventId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"transactionId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"accountId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"amount\",\"type\":\"double\"},{\"name\":\"currency\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"type\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"description\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null},{\"name\":\"occurredAt\",\"type\":\"long\"},{\"name\":\"merchantId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"doc\":\"Optional merchant ID — added in v2, backward compatible\",\"default\":null}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static final SpecificData MODEL$ = new SpecificData();
@@ -82,6 +82,8 @@ public class TransactionInitiatedEvent extends org.apache.avro.specific.Specific
   private java.lang.String type;
   private java.lang.String description;
   private long occurredAt;
+  /** Optional merchant ID — added in v2, backward compatible */
+  private java.lang.String merchantId;
 
   /**
    * Default constructor.  Note that this does not initialize fields
@@ -100,8 +102,9 @@ public class TransactionInitiatedEvent extends org.apache.avro.specific.Specific
    * @param type The new value for type
    * @param description The new value for description
    * @param occurredAt The new value for occurredAt
+   * @param merchantId Optional merchant ID — added in v2, backward compatible
    */
-  public TransactionInitiatedEvent(java.lang.String eventId, java.lang.String transactionId, java.lang.String accountId, java.lang.Double amount, java.lang.String currency, java.lang.String type, java.lang.String description, java.lang.Long occurredAt) {
+  public TransactionInitiatedEvent(java.lang.String eventId, java.lang.String transactionId, java.lang.String accountId, java.lang.Double amount, java.lang.String currency, java.lang.String type, java.lang.String description, java.lang.Long occurredAt, java.lang.String merchantId) {
     this.eventId = eventId;
     this.transactionId = transactionId;
     this.accountId = accountId;
@@ -110,6 +113,7 @@ public class TransactionInitiatedEvent extends org.apache.avro.specific.Specific
     this.type = type;
     this.description = description;
     this.occurredAt = occurredAt;
+    this.merchantId = merchantId;
   }
 
   @Override
@@ -130,6 +134,7 @@ public class TransactionInitiatedEvent extends org.apache.avro.specific.Specific
     case 5: return type;
     case 6: return description;
     case 7: return occurredAt;
+    case 8: return merchantId;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
   }
@@ -147,6 +152,7 @@ public class TransactionInitiatedEvent extends org.apache.avro.specific.Specific
     case 5: type = value$ != null ? value$.toString() : null; break;
     case 6: description = value$ != null ? value$.toString() : null; break;
     case 7: occurredAt = (java.lang.Long)value$; break;
+    case 8: merchantId = value$ != null ? value$.toString() : null; break;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
   }
@@ -288,6 +294,24 @@ public class TransactionInitiatedEvent extends org.apache.avro.specific.Specific
   }
 
   /**
+   * Gets the value of the 'merchantId' field.
+   * @return Optional merchant ID — added in v2, backward compatible
+   */
+  public java.lang.String getMerchantId() {
+    return merchantId;
+  }
+
+
+  /**
+   * Sets the value of the 'merchantId' field.
+   * Optional merchant ID — added in v2, backward compatible
+   * @param value the value to set.
+   */
+  public void setMerchantId(java.lang.String value) {
+    this.merchantId = value;
+  }
+
+  /**
    * Creates a new TransactionInitiatedEvent RecordBuilder.
    * @return A new TransactionInitiatedEvent RecordBuilder
    */
@@ -336,6 +360,8 @@ public class TransactionInitiatedEvent extends org.apache.avro.specific.Specific
     private java.lang.String type;
     private java.lang.String description;
     private long occurredAt;
+    /** Optional merchant ID — added in v2, backward compatible */
+    private java.lang.String merchantId;
 
     /** Creates a new Builder */
     private Builder() {
@@ -380,6 +406,10 @@ public class TransactionInitiatedEvent extends org.apache.avro.specific.Specific
         this.occurredAt = data().deepCopy(fields()[7].schema(), other.occurredAt);
         fieldSetFlags()[7] = other.fieldSetFlags()[7];
       }
+      if (isValidValue(fields()[8], other.merchantId)) {
+        this.merchantId = data().deepCopy(fields()[8].schema(), other.merchantId);
+        fieldSetFlags()[8] = other.fieldSetFlags()[8];
+      }
     }
 
     /**
@@ -419,6 +449,10 @@ public class TransactionInitiatedEvent extends org.apache.avro.specific.Specific
       if (isValidValue(fields()[7], other.occurredAt)) {
         this.occurredAt = data().deepCopy(fields()[7].schema(), other.occurredAt);
         fieldSetFlags()[7] = true;
+      }
+      if (isValidValue(fields()[8], other.merchantId)) {
+        this.merchantId = data().deepCopy(fields()[8].schema(), other.merchantId);
+        fieldSetFlags()[8] = true;
       }
     }
 
@@ -740,6 +774,50 @@ public class TransactionInitiatedEvent extends org.apache.avro.specific.Specific
       return this;
     }
 
+    /**
+      * Gets the value of the 'merchantId' field.
+      * Optional merchant ID — added in v2, backward compatible
+      * @return The value.
+      */
+    public java.lang.String getMerchantId() {
+      return merchantId;
+    }
+
+
+    /**
+      * Sets the value of the 'merchantId' field.
+      * Optional merchant ID — added in v2, backward compatible
+      * @param value The value of 'merchantId'.
+      * @return This builder.
+      */
+    public com.bankstream.transaction.event.avro.TransactionInitiatedEvent.Builder setMerchantId(java.lang.String value) {
+      validate(fields()[8], value);
+      this.merchantId = value;
+      fieldSetFlags()[8] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'merchantId' field has been set.
+      * Optional merchant ID — added in v2, backward compatible
+      * @return True if the 'merchantId' field has been set, false otherwise.
+      */
+    public boolean hasMerchantId() {
+      return fieldSetFlags()[8];
+    }
+
+
+    /**
+      * Clears the value of the 'merchantId' field.
+      * Optional merchant ID — added in v2, backward compatible
+      * @return This builder.
+      */
+    public com.bankstream.transaction.event.avro.TransactionInitiatedEvent.Builder clearMerchantId() {
+      merchantId = null;
+      fieldSetFlags()[8] = false;
+      return this;
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public TransactionInitiatedEvent build() {
@@ -753,6 +831,7 @@ public class TransactionInitiatedEvent extends org.apache.avro.specific.Specific
         record.type = fieldSetFlags()[5] ? this.type : (java.lang.String) defaultValue(fields()[5]);
         record.description = fieldSetFlags()[6] ? this.description : (java.lang.String) defaultValue(fields()[6]);
         record.occurredAt = fieldSetFlags()[7] ? this.occurredAt : (java.lang.Long) defaultValue(fields()[7]);
+        record.merchantId = fieldSetFlags()[8] ? this.merchantId : (java.lang.String) defaultValue(fields()[8]);
         return record;
       } catch (org.apache.avro.AvroMissingFieldException e) {
         throw e;
@@ -807,6 +886,14 @@ public class TransactionInitiatedEvent extends org.apache.avro.specific.Specific
 
     out.writeLong(this.occurredAt);
 
+    if (this.merchantId == null) {
+      out.writeIndex(0);
+      out.writeNull();
+    } else {
+      out.writeIndex(1);
+      out.writeString(this.merchantId);
+    }
+
   }
 
   @Override public void customDecode(org.apache.avro.io.ResolvingDecoder in)
@@ -835,8 +922,15 @@ public class TransactionInitiatedEvent extends org.apache.avro.specific.Specific
 
       this.occurredAt = in.readLong();
 
+      if (in.readIndex() != 1) {
+        in.readNull();
+        this.merchantId = null;
+      } else {
+        this.merchantId = in.readString();
+      }
+
     } else {
-      for (int i = 0; i < 8; i++) {
+      for (int i = 0; i < 9; i++) {
         switch (fieldOrder[i].pos()) {
         case 0:
           this.eventId = in.readString();
@@ -873,6 +967,15 @@ public class TransactionInitiatedEvent extends org.apache.avro.specific.Specific
 
         case 7:
           this.occurredAt = in.readLong();
+          break;
+
+        case 8:
+          if (in.readIndex() != 1) {
+            in.readNull();
+            this.merchantId = null;
+          } else {
+            this.merchantId = in.readString();
+          }
           break;
 
         default:

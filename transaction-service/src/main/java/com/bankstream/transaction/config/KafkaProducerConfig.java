@@ -100,6 +100,23 @@ public class KafkaProducerConfig {
         return new DefaultKafkaProducerFactory<>(props);
     }
 
+    @Bean
+    public ProducerFactory<String, byte[]> byteProducerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ProducerConfig.ACKS_CONFIG, "all");
+        props.put(ProducerConfig.RETRIES_CONFIG, 3);
+        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+        props.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 5);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        // ByteArraySerialezer - sends raw bytes as-is, no transformation
+        // Avro bytes already contains the magic byte + schema ID + payload
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                org.apache.kafka.common.serialization.ByteArraySerializer.class);
+
+        return new DefaultKafkaProducerFactory<>(props);
+    }
+
     @Bean("objectKafkaTemplate")
     public KafkaTemplate<String, Object> objectKafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
@@ -113,5 +130,19 @@ public class KafkaProducerConfig {
     @Bean("stringKafkaTemplate")
     public KafkaTemplate<String, String> stringKafkaTemplate() {
         return new KafkaTemplate<>(stringProducerFactory());
+    }
+
+    @Bean("bytesKafkaTemplate")
+    public KafkaTemplate<String, byte[]> bytesKafkaTemplate() {
+        return new KafkaTemplate<>(byteProducerFactory());
+    }
+
+    @Bean
+    public KafkaAvroSerializer kafkaAvroSerializer() {
+        KafkaAvroSerializer serializer = new KafkaAvroSerializer();
+        Map<String, Object> config = new HashMap<>();
+        config.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
+        serializer.configure(config, false);
+        return serializer;
     }
 }

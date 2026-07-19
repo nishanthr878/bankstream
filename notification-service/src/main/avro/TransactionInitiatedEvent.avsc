@@ -11,6 +11,12 @@
     {"name": "currency",      "type": "string"},
     {"name": "type",          "type": "string"},
     {"name": "description",   "type": ["null", "string"], "default": null},
-    {"name": "occurredAt",    "type": "long"}
+    {"name": "occurredAt",    "type": "long"},
+    {
+      "name": "merchantId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Optional merchant ID — added in v2, backward compatible"
+    }
   ]
 }
