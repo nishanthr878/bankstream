@@ -1,0 +1,17 @@
+{
+  "type": "record",
+  "name": "FraudAlertEvent",
+  "namespace": "com.bankstream.fraud.event.avro",
+  "doc": "Fraud alert produced when suspicious transaction pattern detected",
+  "fields": [
+    {"name": "alertId",       "type": "string"},
+    {"name": "accountId",     "type": "string"},
+    {"name": "transactionId", "type": "string"},
+    {"name": "alertType",     "type": "string",
+     "doc": "HIGH_VALUE, VELOCITY, RAPID_LARGE"},
+    {"name": "reason",        "type": "string"},
+    {"name": "amount",        "type": "double"},
+    {"name": "accountTier",   "type": "string"},
+    {"name": "detectedAt",    "type": "long"}
+  ]
+}

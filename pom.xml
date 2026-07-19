@@ -13,6 +13,7 @@
     <modules>
         <module>transaction-service</module>
         <module>notification-service</module>
+        <module>fraud-detection-service</module>
     </modules>
 
     <parent>

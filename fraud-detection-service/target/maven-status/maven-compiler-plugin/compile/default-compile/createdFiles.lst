@@ -1,0 +1,12 @@
+com/bankstream/fraud/streams/FraudDetectionTopology$EnrichedTransaction.class
+com/bankstream/account/event/avro/AccountEvent.class
+com/bankstream/transaction/event/avro/TransactionInitiatedEvent.class
+com/bankstream/fraud/event/avro/FraudAlertEvent$Builder.class
+com/bankstream/fraud/model/AccountTier.class
+com/bankstream/fraud/event/avro/FraudAlertEvent.class
+com/bankstream/fraud/streams/FraudDetectionTopology.class
+com/bankstream/fraud/FraudDetectionApplication.class
+com/bankstream/fraud/model/AccountTier$1.class
+com/bankstream/account/event/avro/AccountEvent$Builder.class
+com/bankstream/transaction/event/avro/TransactionInitiatedEvent$Builder.class
+com/bankstream/fraud/config/KafkaStreamsConfig.class

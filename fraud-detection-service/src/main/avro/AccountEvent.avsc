@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "AccountEvent",
+  "namespace": "com.bankstream.account.event.avro",
+  "doc": "Account data published to Kafka for stream processing",
+  "fields": [
+    {"name": "accountId",     "type": "string"},
+    {"name": "accountNumber", "type": "string"},
+    {"name": "ownerName",     "type": "string"},
+    {"name": "tier",          "type": "string",
+     "doc": "STANDARD, PREMIUM, or ELITE"},
+    {"name": "status",        "type": "string",
+     "doc": "ACTIVE, SUSPENDED, or CLOSED"}
+  ]
+}

@@ -1,6 +1,8 @@
 com/bankstream/transaction/producer/TransactionProducer.class
 com/bankstream/transaction/domain/TransactionStatus.class
 com/bankstream/transaction/event/TransactionInitiatedEvent.class
+com/bankstream/account/event/avro/AccountEvent.class
+com/bankstream/transaction/seeder/AccountSeeder.class
 com/bankstream/transaction/event/avro/TransactionInitiatedEvent.class
 com/bankstream/transaction/config/KafkaProducerConfig.class
 com/bankstream/transaction/controller/TransactionController.class
@@ -8,6 +10,7 @@ com/bankstream/transaction/repository/TransactionRepository.class
 com/bankstream/transaction/TransactionServiceApplication.class
 com/bankstream/transaction/event/TransactionInitiatedEvent$TransactionInitiatedEventBuilder.class
 com/bankstream/transaction/service/TransactionService.class
+com/bankstream/account/event/avro/AccountEvent$Builder.class
 com/bankstream/transaction/repository/OutboxRepository.class
 com/bankstream/transaction/outbox/OutboxPoller.class
 com/bankstream/transaction/domain/Outbox$OutboxBuilder.class

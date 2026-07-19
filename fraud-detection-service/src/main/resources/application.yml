@@ -1,0 +1,18 @@
+server:
+  port: 8092
+
+spring:
+  application:
+    name: fraud-detection-service
+
+kafka:
+  streams:
+    bootstrap-servers: localhost:29092,localhost:29094
+    application-id: fraud-detection-service
+    schema-registry-url: http://localhost:8081
+    state-dir: /tmp/kafka-streams/fraud-detection
+
+logging:
+  level:
+    com.bankstream: DEBUG
+    org.apache.kafka: WARN
