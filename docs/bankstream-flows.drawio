@@ -1,0 +1,642 @@
+<mxfile host="Electron" pages="6">
+  <diagram id="aZyr0zSJRO10bmiFRwGe" name="Producer Consumer Basics">
+    <mxGraphModel dx="2207" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--1" parent="1" style="text;html=1;fillColor=#1a1a2e;strokeColor=none;align=center;fontStyle=1;fontSize=14;fontColor=#ffffff;whiteSpace=wrap;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Page 1 · Producer / Consumer Basics" vertex="1">
+          <mxGeometry height="36" width="1600" x="80" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5f5e3;strokeColor=#27ae60;fontStyle=1;fontSize=11;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="🌐 Client" vertex="1">
+          <mxGeometry height="55" width="110" x="-70" y="159.5" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="TransactionController&#xa;─────────────────&#xa;@RestController&#xa;@PostMapping&#xa;JSON body → Java record&#xa;calls service method&#xa;returns 200 OK" vertex="1">
+          <mxGeometry height="120" width="175" x="200" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="TransactionService&#xa;─────────────────&#xa;@Service @Transactional&#xa;&#xa;1. Build Transaction&#xa;2. repo.save(tx)&#xa;3. Build Event&#xa;4. producer.publish()&#xa;5. TX commits → INSERT" vertex="1">
+          <mxGeometry height="150" width="185" x="425" y="105" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="TransactionProducer&#xa;─────────────────────&#xa;@Component&#xa;@Qualifier(&quot;avroKafkaTemplate&quot;)&#xa;&#xa;kafkaTemplate.send(&#xa;  &quot;transaction.initiated&quot;,&#xa;  accountId, ← partition key&#xa;  avroEvent  ← value&#xa;)&#xa;→ CompletableFuture" vertex="1">
+          <mxGeometry height="160" width="200" x="650" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Kafka Broker&#xa;─────────────────────&#xa;hash(accountId) % 3&#xa;→ select partition&#xa;&#xa;ACC001→P0 (kafka1 leads)&#xa;ACC002→P1 (kafka2 leads)&#xa;ACC003→P2 (kafka1 leads)&#xa;&#xa;Follower PULLS from leader&#xa;ISR=[1,2] → sends ack&#xa;Offset assigned = 5" vertex="1">
+          <mxGeometry height="175" width="210" x="1010" y="92.5" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="notification-service&#xa;─────────────────────────&#xa;@KafkaListener&#xa;group=notification-service&#xa;concurrency=3&#xa;AckMode=MANUAL_IMMEDIATE&#xa;&#xa;consumer.poll(100ms)&#xa;process(record)&#xa;acknowledgment.acknowledge()&#xa;→ offset committed" vertex="1">
+          <mxGeometry height="185" width="210" x="1360" y="87.5" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--8" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Postgres&#xa;transactions&#xa;────────&#xa;id, account_id&#xa;amount, type&#xa;status=INITIATED" vertex="1">
+          <mxGeometry height="120" width="140" x="1610" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--9" edge="1" parent="1" source="3zYKDeG8nNZXjcPaYTb--2" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;fontSize=9;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="3zYKDeG8nNZXjcPaYTb--3" value="POST /api/transactions">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--10" edge="1" parent="1" source="3zYKDeG8nNZXjcPaYTb--3" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="3zYKDeG8nNZXjcPaYTb--4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--11" edge="1" parent="1" source="3zYKDeG8nNZXjcPaYTb--4" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="3zYKDeG8nNZXjcPaYTb--5" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--12" edge="1" parent="1" source="3zYKDeG8nNZXjcPaYTb--5" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;fontSize=9;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="3zYKDeG8nNZXjcPaYTb--6" value="buffer→I/O thread→broker">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--13" edge="1" parent="1" source="3zYKDeG8nNZXjcPaYTb--6" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;fontSize=9;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="3zYKDeG8nNZXjcPaYTb--7" value="consumer.poll()">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--14" edge="1" parent="1" source="3zYKDeG8nNZXjcPaYTb--4" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;dashed=1;fontSize=9;exitX=0.5;exitY=1;entryX=0.5;entryY=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="3zYKDeG8nNZXjcPaYTb--8" value="JDBC INSERT">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="527" y="300" />
+              <mxPoint x="1450" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--15" edge="1" parent="1" source="3zYKDeG8nNZXjcPaYTb--3" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;fontSize=9;exitX=0;exitY=0.5;entryX=1;entryY=0.5;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="3zYKDeG8nNZXjcPaYTb--2" value="200 OK">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240" y="260" />
+              <mxPoint x="155" y="260" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--16" parent="1" style="text;html=1;fillColor=#fadbd8;strokeColor=#c0392b;align=left;fontStyle=1;fontSize=11;fontColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="❌ FAILURE PATH — Without idempotence, retry = duplicate message" vertex="1">
+          <mxGeometry height="24" width="680" x="100" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--17" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Send msg (PID=42,Seq=7)" vertex="1">
+          <mxGeometry height="45" width="160" x="80" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--18" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Timeout — no ack&#xa;(broker may have got it)" vertex="1">
+          <mxGeometry height="45" width="160" x="350" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--19" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Producer retries&#xa;(retries=3)" vertex="1">
+          <mxGeometry height="45" width="140" x="540" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--20" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="❌ NO idempotence: duplicate stored, consumer sees 2 msgs" vertex="1">
+          <mxGeometry height="55" width="220" x="500" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--21" parent="1" style="rounded=1;fillColor=#d5f5e3;strokeColor=#27ae60;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="✅ WITH idempotence: PID+Seq deduped by broker → 1 msg only" vertex="1">
+          <mxGeometry height="55" width="220" x="500" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--22" edge="1" parent="1" source="3zYKDeG8nNZXjcPaYTb--17" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="3zYKDeG8nNZXjcPaYTb--18" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--23" edge="1" parent="1" source="3zYKDeG8nNZXjcPaYTb--18" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="3zYKDeG8nNZXjcPaYTb--19" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--24" edge="1" parent="1" source="3zYKDeG8nNZXjcPaYTb--19" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;fontSize=11;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="3zYKDeG8nNZXjcPaYTb--20" value="❌">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--25" edge="1" parent="1" source="3zYKDeG8nNZXjcPaYTb--19" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;fontSize=11;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="3zYKDeG8nNZXjcPaYTb--21" value="✅">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--26" parent="1" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="KafkaProducerConfig&#xa;────────────────────────&#xa;acks=all → wait ALL ISR&#xa;idempotence=true → PID+Seq&#xa;max.in.flight=5 (must ≤5)&#xa;retries=3&#xa;linger.ms=5 (batch wait)&#xa;KEY: StringSerializer&#xa;VAL: KafkaAvroSerializer&#xa;schema.registry.url=:8081" vertex="1">
+          <mxGeometry height="160" width="220" x="840" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--27" parent="1" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Offset Facts&#xa;────────────────────────&#xa;Stored in __consumer_offsets&#xa;NOT in consumer process&#xa;Consumer dies → offset SAFE&#xa;auto-commit = risky (timer)&#xa;MANUAL_IMMEDIATE = safe&#xa;At-least-once + idempotency&#xa;guard = processed_events table" vertex="1">
+          <mxGeometry height="155" width="220" x="840" y="525" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--28" parent="1" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Partition Key = accountId&#xa;────────────────────────────────────&#xa;Same key → same partition&#xa;→ single consumer thread&#xa;→ ordered per account&#xa;&#xa;No key → round-robin&#xa;→ no ordering&#xa;&#xa;Fraud detection NEEDS order&#xa;(velocity: tx1,tx2,tx3 in seq)" vertex="1">
+          <mxGeometry height="165" width="310" x="1110" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="3zYKDeG8nNZXjcPaYTb--29" parent="1" style="rounded=1;fillColor=#e8f4fd;strokeColor=#2980b9;fontSize=11;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Architecture Decision: acks=all + min.insync.replicas=2 MUST be set together&#xa;acks=1 alone → leader acks → crashes before replication → DATA LOSS&#xa;acks=all alone → ISR shrinks to 1 → waits for 1 only → FALSE SAFETY&#xa;Both together → broker REJECTS if ISR&lt;2 → real guarantee" vertex="1">
+          <mxGeometry height="80" width="780" x="90" y="730" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="PJ_YJh3jB11PAkddRrsk" name="Outbox Pattern">
+    <mxGraphModel dx="1357" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-1" parent="1" style="text;html=1;fillColor=#1a1a2e;strokeColor=none;align=center;fontStyle=1;fontSize=14;fontColor=#ffffff;whiteSpace=wrap;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Outbox Pattern — Guaranteed Kafka delivery with DB atomicity" vertex="1">
+          <mxGeometry height="36" width="1600" x="100" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-2" parent="1" style="text;html=1;fillColor=#fadbd8;strokeColor=#c0392b;align=left;fontStyle=1;fontSize=11;fontColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="❌ THE PROBLEM — @Transactional does NOT span Postgres + Kafka" vertex="1">
+          <mxGeometry height="24" width="600" x="100" y="385" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="// What engineers write:&#xa;@Transactional&#xa;void createTransaction() {&#xa;   repo.save(tx);         // DB write&#xa;   kafka.send(event);     // Kafka write&#xa;}&#xa;&#xa;// What can go wrong:&#xa;repo.save(tx)  ✅ committed&#xa;Kafka DOWN     ❌ event lost forever&#xa;&#xa;// @Transactional does NOT help:&#xa;// JpaTransactionManager = Postgres only&#xa;// Kafka is OUTSIDE transaction boundary&#xa;// No atomic cross-system operation exists" vertex="1">
+          <mxGeometry height="210" width="310" x="80" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-4" parent="1" style="text;html=1;fillColor=#d5f5e3;strokeColor=#27ae60;align=left;fontStyle=1;fontSize=11;fontColor=#1e8449;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="✅ HAPPY PATH — Outbox: both DB writes atomic, Kafka publish separate" vertex="1">
+          <mxGeometry height="24" width="650" x="310" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="TransactionService&#xa;@Transactional&#xa;────────────────────────&#xa;1. INSERT transactions row&#xa;2. INSERT outbox row&#xa;   topic=&quot;transaction.initiated&quot;&#xa;   payload=Base64(AvroBytes)&#xa;   published=false&#xa;3. TX COMMITS&#xa;   BOTH rows or NEITHER&#xa;&#xa;❌ NO kafka.send() here!" vertex="1">
+          <mxGeometry height="195" width="220" x="430" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-6" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Postgres (atomic)&#xa;─────────────────────&#xa;transactions:&#xa;  id, amount, status&#xa;&#xa;outbox:&#xa;  id, topic,&#xa;  partition_key,&#xa;  payload (JSONB/Base64),&#xa;  published=false,&#xa;  retry_count=0,&#xa;  last_error=null" vertex="1">
+          <mxGeometry height="185" width="170" x="715" y="525" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="OutboxPoller&#xa;@Scheduled(fixedDelay=1000ms)&#xa;@Transactional&#xa;────────────────────────────────&#xa;SELECT * FROM outbox&#xa;WHERE published=false&#xa;ORDER BY created_at LIMIT 100&#xa;FOR UPDATE SKIP LOCKED&#xa;↑ multiple instances safe&#xa;&#xa;Base64.decode(payload)→bytes[]&#xa;bytesKafkaTemplate.send(bytes).get()&#xa;↑ synchronous — waits for ack&#xa;&#xa;SET published=true&#xa;SET published_at=now()" vertex="1">
+          <mxGeometry height="205" width="265" x="970" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Kafka&#xa;transaction.initiated&#xa;──────────────────────&#xa;Receives raw Avro bytes&#xa;[0x00][schemaId][binary]&#xa;&#xa;Consumer&#39;s&#xa;KafkaAvroDeserializer&#xa;reads magic byte&#xa;fetches schema by ID&#xa;returns typed object" vertex="1">
+          <mxGeometry height="185" width="200" x="1410" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-9" edge="1" parent="1" source="yJfWwOfNQ-Znc4rAKRkh-5" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;fontSize=9;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="yJfWwOfNQ-Znc4rAKRkh-6" value="atomic">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-10" edge="1" parent="1" source="yJfWwOfNQ-Znc4rAKRkh-7" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#d6b656;fontSize=9;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="yJfWwOfNQ-Znc4rAKRkh-6" value="reads every 1s">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-11" edge="1" parent="1" source="yJfWwOfNQ-Znc4rAKRkh-7" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;fontSize=9;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="yJfWwOfNQ-Znc4rAKRkh-8" value="raw Avro bytes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-12" parent="1" style="text;html=1;fillColor=#fadbd8;strokeColor=#c0392b;align=left;fontStyle=1;fontSize=11;fontColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="❌ FAILURE PATH — Kafka down → outbox retries → event delivered on recovery" vertex="1">
+          <mxGeometry height="24" width="700" x="80" y="860" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-13" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="TX commits&#xa;Both rows saved&#xa;published=false" vertex="1">
+          <mxGeometry height="55" width="140" x="90" y="910" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-14" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Kafka DOWN&#xa;send().get() throws&#xa;retry_count++&#xa;last_error logged" vertex="1">
+          <mxGeometry height="55" width="150" x="340" y="910" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-15" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Poller retries&#xa;every 1 second&#xa;MAX_RETRY=5&#xa;Logged as CRITICAL" vertex="1">
+          <mxGeometry height="55" width="150" x="570" y="910" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-16" parent="1" style="rounded=1;fillColor=#d5f5e3;strokeColor=#27ae60;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Kafka RECOVERS&#xa;send() succeeds&#xa;published=true ✅&#xa;Consumer gets event" vertex="1">
+          <mxGeometry height="58" width="150" x="810" y="907" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-17" edge="1" parent="1" source="yJfWwOfNQ-Znc4rAKRkh-13" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="yJfWwOfNQ-Znc4rAKRkh-14" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-18" edge="1" parent="1" source="yJfWwOfNQ-Znc4rAKRkh-14" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="yJfWwOfNQ-Znc4rAKRkh-15" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-19" edge="1" parent="1" source="yJfWwOfNQ-Znc4rAKRkh-15" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;fontSize=9;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="yJfWwOfNQ-Znc4rAKRkh-16" value="Kafka back">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-20" parent="1" style="rounded=1;fillColor=#ede9fe;strokeColor=#7b2d8b;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Outbox + Avro: Base64 bridge&#xa;─────────────────────────────────────────────────────&#xa;Problem: outbox payload=JSONB (text). Avro=binary bytes. Can&#39;t store binary in JSONB.&#xa;Fix: KafkaAvroSerializer.serialize() → bytes → Base64.encode() → store as text&#xa;Poller: Base64.decode() → raw bytes → bytesKafkaTemplate (ByteArraySerializer) → Kafka&#xa;Consumer: KafkaAvroDeserializer reads magic byte → schema ID → typed object" vertex="1">
+          <mxGeometry height="100" width="580" x="820" y="980" as="geometry" />
+        </mxCell>
+        <mxCell id="yJfWwOfNQ-Znc4rAKRkh-21" parent="1" style="rounded=1;fillColor=#e8f4fd;strokeColor=#2980b9;fontSize=11;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Architecture Decision: Outbox over direct Kafka publish&#xa;Option A (direct): fast, simple, NO guarantee if Kafka down at publish time&#xa;Option B (outbox): ~1s latency, GUARANTEED — event survives even if Kafka is down for hours&#xa;Banking choice: outbox — cannot silently lose a transaction event" vertex="1">
+          <mxGeometry height="80" width="760" x="50" y="990" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="1P6rXkloFRqb4ysqd1C8" name="DLQ">
+    <mxGraphModel dx="1357" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-1" parent="1" style="text;html=1;fillColor=#1a1a2e;strokeColor=none;align=center;fontStyle=1;fontSize=14;fontColor=#ffffff;whiteSpace=wrap;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&amp;nbsp;Dead Letter Queue — Retry with exponential backoff · Poison pill handling" vertex="1">
+          <mxGeometry height="36" width="1600" x="180" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-2" parent="1" style="text;html=1;fillColor=#d5f5e3;strokeColor=#27ae60;align=left;fontStyle=1;fontSize=11;fontColor=#1e8449;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="✅ HAPPY PATH — Message processed successfully on first attempt" vertex="1">
+          <mxGeometry height="24" width="600" x="180" y="305" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-3" parent="1" style="rounded=1;fillColor=#d5f5e3;strokeColor=#27ae60;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Consumer receives msg&#xa;offset=5, partition=2" vertex="1">
+          <mxGeometry height="50" width="155" x="180" y="338" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-4" parent="1" style="rounded=1;fillColor=#d5f5e3;strokeColor=#27ae60;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Check processed_events&#xa;by eventId (PK)&#xa;→ not found (new event)" vertex="1">
+          <mxGeometry height="50" width="160" x="360" y="338" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-5" parent="1" style="rounded=1;fillColor=#d5f5e3;strokeColor=#27ae60;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="notificationService&#xa;.sendNotification(event)&#xa;→ SUCCESS" vertex="1">
+          <mxGeometry height="50" width="155" x="545" y="338" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-6" parent="1" style="rounded=1;fillColor=#d5f5e3;strokeColor=#27ae60;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="INSERT processed_events&#xa;(eventId, group, timestamp)" vertex="1">
+          <mxGeometry height="50" width="165" x="725" y="338" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-7" parent="1" style="rounded=1;fillColor=#d5f5e3;strokeColor=#27ae60;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="acknowledgment&#xa;.acknowledge()&#xa;→ offset committed" vertex="1">
+          <mxGeometry height="50" width="155" x="915" y="338" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-8" edge="1" parent="1" source="mui85cja-ccYRbV_Qy9Y-3" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="mui85cja-ccYRbV_Qy9Y-4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-9" edge="1" parent="1" source="mui85cja-ccYRbV_Qy9Y-4" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="mui85cja-ccYRbV_Qy9Y-5" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-10" edge="1" parent="1" source="mui85cja-ccYRbV_Qy9Y-5" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="mui85cja-ccYRbV_Qy9Y-6" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-11" edge="1" parent="1" source="mui85cja-ccYRbV_Qy9Y-6" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="mui85cja-ccYRbV_Qy9Y-7" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-12" parent="1" style="text;html=1;fillColor=#fadbd8;strokeColor=#c0392b;align=left;fontStyle=1;fontSize=11;fontColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="❌ FAILURE PATH — Poison pill goes through retry → DLQ" vertex="1">
+          <mxGeometry height="24" width="600" x="180" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-13" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Consume msg&#xa;amount=999.99&#xa;(simulated fail)" vertex="1">
+          <mxGeometry height="55" width="130" x="180" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-14" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Attempt 1 FAILS&#xa;RuntimeException&#xa;wait 1s (2^0 * 1000)" vertex="1">
+          <mxGeometry height="55" width="140" x="335" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-15" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Attempt 2 FAILS&#xa;RuntimeException&#xa;wait 2s (2^1 * 1000)" vertex="1">
+          <mxGeometry height="55" width="140" x="500" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-16" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Attempt 3 FAILS&#xa;RuntimeException&#xa;MAX_RETRIES hit" vertex="1">
+          <mxGeometry height="55" width="140" x="665" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-17" parent="1" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="dlqProducer.sendToDlq()&#xa;→ transaction.dlq topic&#xa;→ manual inspection" vertex="1">
+          <mxGeometry height="55" width="155" x="830" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-18" parent="1" style="rounded=1;fillColor=#d5f5e3;strokeColor=#27ae60;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="acknowledgment&#xa;.acknowledge()&#xa;← MUST ack original!&#xa;Offset advances" vertex="1">
+          <mxGeometry height="55" width="150" x="1010" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-19" edge="1" parent="1" source="mui85cja-ccYRbV_Qy9Y-13" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="mui85cja-ccYRbV_Qy9Y-14" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-20" edge="1" parent="1" source="mui85cja-ccYRbV_Qy9Y-14" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="mui85cja-ccYRbV_Qy9Y-15" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-21" edge="1" parent="1" source="mui85cja-ccYRbV_Qy9Y-15" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="mui85cja-ccYRbV_Qy9Y-16" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-22" edge="1" parent="1" source="mui85cja-ccYRbV_Qy9Y-16" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;fontSize=9;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="mui85cja-ccYRbV_Qy9Y-17" value="DLQ">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-23" edge="1" parent="1" source="mui85cja-ccYRbV_Qy9Y-17" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;fontSize=9;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="mui85cja-ccYRbV_Qy9Y-18" value="MUST ack!">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-24" parent="1" style="rounded=1;fillColor=#fef9e7;strokeColor=#f39c12;fontSize=11;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Why MUST you acknowledge() after DLQ routing?&#xa;────────────────────────────────────────────────────────────────────────────────────────────────&#xa;WITHOUT ack: offset=5 never committed → consumer restarts → reads offset=5 again → fails again → DLQ again → INFINITE LOOP&#xa;WITH ack: offset=5 committed → consumer reads offset=6 → continues normally&#xa;The DLQ is where the problem lives now. The original topic must move on." vertex="1">
+          <mxGeometry height="80" width="900" x="180" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-25" parent="1" style="rounded=1;fillColor=#d5f5e3;strokeColor=#27ae60;fontSize=11;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Idempotency Guard — processed_events table&#xa;────────────────────────────────────────────────────────────────────────────────────────────────────────────────────&#xa;At-least-once delivery = messages CAN be redelivered (rebalance, crash between process+ack)&#xa;Guard: check processed_events by eventId (UUID PRIMARY KEY) before processing&#xa;If found → skip (already done) → ack → continue&#xa;If not found → process → INSERT processed_events → ack&#xa;Race condition: 2 instances process same msg simultaneously → 2nd INSERT fails with PK violation&#xa;→ catch DataIntegrityViolationException → treat as duplicate → ack → continue (safe)" vertex="1">
+          <mxGeometry height="120" width="1100" x="180" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="mui85cja-ccYRbV_Qy9Y-26" parent="1" style="rounded=1;fillColor=#e8f4fd;strokeColor=#2980b9;fontSize=11;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Architecture Decision: DLQ over infinite retry&#xa;Infinite retry: consumer blocked forever on poison pill → all msgs behind it stuck → LAG GROWS&#xa;DLQ: after N retries, message moved to transaction.dlq → consumer continues → manual inspection&#xa;transaction.dlq has 1 partition (ordered inspection) + replication-factor=2 (durable)" vertex="1">
+          <mxGeometry height="80" width="760" x="180" y="758" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="PMCzvRmRfz6h2Y6NgdYy" name="Avro">
+    <mxGraphModel dx="1357" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="_k602q0rn5mzXV7NrRC2-1" parent="1" style="text;html=1;fillColor=#1a1a2e;strokeColor=none;align=center;fontStyle=1;fontSize=14;fontColor=#ffffff;whiteSpace=wrap;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&amp;nbsp;Avro + Schema Registry — Schema evolution · Backward compatibility · Wire format" vertex="1">
+          <mxGeometry height="36" width="1600" x="60" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-2" parent="1" style="text;html=1;fillColor=#fadbd8;strokeColor=#c0392b;align=left;fontStyle=1;fontSize=11;fontColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="❌ THE PROBLEM — JSON has no contract. Producer changes field → all consumers break silently" vertex="1">
+          <mxGeometry height="24" width="800" x="60" y="415" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-3" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="// Producer v1 sends:&#xa;{&quot;amount&quot;: 1500, &quot;type&quot;: &quot;DEBIT&quot;}&#xa;&#xa;// Producer renames field (v2):&#xa;{&quot;amount&quot;: 1500, &quot;txType&quot;: &quot;DEBIT&quot;}&#xa;                   ↑ renamed!&#xa;&#xa;// Consumer still reads:&#xa;event.get(&quot;type&quot;)  → null&#xa;&#xa;// No error at publish time&#xa;// Breaks silently at runtime&#xa;// 5 consumers all fail" vertex="1">
+          <mxGeometry height="185" width="260" x="60" y="448" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-4" parent="1" style="text;html=1;fillColor=#d5f5e3;strokeColor=#27ae60;align=left;fontStyle=1;fontSize=11;fontColor=#1e8449;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="✅ HAPPY PATH — Avro schema enforces contract, Registry catches breaking changes at publish time" vertex="1">
+          <mxGeometry height="24" width="780" x="50" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-5" parent="1" style="rounded=1;fillColor=#ede9fe;strokeColor=#7b2d8b;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value=".avsc schema file&#xa;────────────────────────&#xa;{&quot;type&quot;:&quot;record&quot;,&#xa; &quot;name&quot;:&quot;TransactionInitiatedEvent&quot;,&#xa; &quot;fields&quot;:[&#xa;  {&quot;name&quot;:&quot;eventId&quot;,&quot;type&quot;:&quot;string&quot;},&#xa;  {&quot;name&quot;:&quot;amount&quot;,&quot;type&quot;:&quot;double&quot;},&#xa;  {&quot;name&quot;:&quot;description&quot;,&#xa;   &quot;type&quot;:[&quot;null&quot;,&quot;string&quot;],&#xa;   &quot;default&quot;:null}  ← optional!&#xa; ]}&#xa;&#xa;avro-maven-plugin generates&#xa;Java class with builder" vertex="1">
+          <mxGeometry height="200" width="240" x="60" y="810" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-6" parent="1" style="rounded=1;fillColor=#ede9fe;strokeColor=#7b2d8b;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Schema Registry&#xa;http://localhost:8081&#xa;────────────────────────────────&#xa;Subjects registered:&#xa;transaction.initiated-value v1&#xa;transaction.initiated-value v2&#xa;account.created-value v1&#xa;fraud.alert-value v1&#xa;&#xa;API endpoints:&#xa;GET /subjects&#xa;GET /subjects/{name}/versions&#xa;POST /compatibility/... (check)&#xa;PUT /config/{name} (set mode)&#xa;&#xa;Compatibility mode: FULL&#xa;(both backward AND forward)" vertex="1">
+          <mxGeometry height="215" width="255" x="380" y="810" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-7" parent="1" style="rounded=1;fillColor=#ede9fe;strokeColor=#7b2d8b;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Wire Format (binary)&#xa;────────────────────────────────&#xa;[0x00][schemaId 4B][Avro binary]&#xa;&#xa;0x00 = Confluent magic byte&#xa;schemaId = integer (e.g. 1, 2)&#xa;Avro binary = compact encoded&#xa;&#xa;vs JSON: {&quot;eventId&quot;:&quot;abc&quot;,...}&#xa;Avro binary ≈ 15 bytes&#xa;JSON text  ≈ 49 bytes&#xa;&#xa;Kafka UI needs Schema Registry&#xa;to decode and display fields" vertex="1">
+          <mxGeometry height="195" width="230" x="710" y="820" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-8" parent="1" style="rounded=1;fillColor=#ede9fe;strokeColor=#7b2d8b;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Compatibility Modes&#xa;────────────────────────────────────────&#xa;BACKWARD (default):&#xa;  New schema reads OLD messages&#xa;  Remove field = OK (ignores it)&#xa;  But old consumers reading NEW messages = breaks&#xa;&#xa;FORWARD:&#xa;  Old schema reads NEW messages&#xa;  Remove field = FAIL (field missing)&#xa;&#xa;FULL (we use this):&#xa;  Both directions enforced&#xa;  Add optional field (default=null) = OK ✅&#xa;  Remove required field = REJECTED ❌&#xa;  Rename field = REJECTED ❌&#xa;&#xa;Set: PUT /config/{subject} {&quot;compatibility&quot;:&quot;FULL&quot;}" vertex="1">
+          <mxGeometry height="235" width="295" x="1070" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-9" parent="1" style="text;html=1;fillColor=#fadbd8;strokeColor=#c0392b;align=left;fontStyle=1;fontSize=11;fontColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="❌ FAILURE PATH — Old JSON messages in Avro topic → Unknown magic byte" vertex="1">
+          <mxGeometry height="24" width="700" x="20" y="1080" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-10" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Phase 4: JSON msg&#xa;{&quot;eventId&quot;:...}&#xa;in topic (offset 1)" vertex="1">
+          <mxGeometry height="55" width="140" x="20" y="1150" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-11" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Phase 5: switch to&#xa;KafkaAvroDeserializer&#xa;reads offset 1" vertex="1">
+          <mxGeometry height="55" width="150" x="230" y="1150" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-12" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Deserializer looks for&#xa;0x00 magic byte&#xa;Finds 0x7B &#39;{&#39; instead&#xa;→ SerializationException&#xa;&quot;Unknown magic byte!&quot;" vertex="1">
+          <mxGeometry height="70" width="175" x="450" y="1142.5" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-13" parent="1" style="rounded=1;fillColor=#d5f5e3;strokeColor=#27ae60;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Fix:&#xa;1. Delete topic (removes old JSON msgs)&#xa;2. Recreate topic&#xa;3. Add ErrorHandlingDeserializer wrapper&#xa;   (catches deser errors → routes to DLQ)" vertex="1">
+          <mxGeometry height="70" width="250" x="735" y="1142.5" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-14" edge="1" parent="1" source="_k602q0rn5mzXV7NrRC2-10" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="_k602q0rn5mzXV7NrRC2-11" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-15" edge="1" parent="1" source="_k602q0rn5mzXV7NrRC2-11" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="_k602q0rn5mzXV7NrRC2-12" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-16" edge="1" parent="1" source="_k602q0rn5mzXV7NrRC2-12" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;fontSize=9;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="_k602q0rn5mzXV7NrRC2-13" value="fix →">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="_k602q0rn5mzXV7NrRC2-17" parent="1" style="rounded=1;fillColor=#e8f4fd;strokeColor=#2980b9;fontSize=11;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Architecture Decision: FULL compatibility mode over BACKWARD&#xa;BACKWARD alone: remove field = compatible (new schema ignores it in old msgs)&#xa;→ But old consumers reading new messages would BREAK — not caught!&#xa;FULL: remove field = INCOMPATIBLE — caught at PUBLISH TIME, not runtime&#xa;Banking rule: breaking changes must fail before bad data enters Kafka" vertex="1">
+          <mxGeometry height="90" width="780" x="30" y="1240" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="ipT7oXfEVSABNVT5VjDZ" name="Kafka Streams">
+    <mxGraphModel dx="2207" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-1" parent="1" style="text;html=1;fillColor=#1a1a2e;strokeColor=none;align=center;fontStyle=1;fontSize=14;fontColor=#ffffff;whiteSpace=wrap;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&amp;nbsp;Kafka Streams — Aggregations · Windowing · Stream-Table Join · Fraud Detection" vertex="1">
+          <mxGeometry height="36" width="1600" x="120" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-2" parent="1" style="rounded=1;fillColor=#d5f5e3;strokeColor=#166534;fontSize=11;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Kafka Streams is a LIBRARY (not a separate cluster)&#xa;────────────────────────────────────────────────────────────────────────────────&#xa;Runs inside fraud-detection-service JVM process&#xa;Scales by running more instances of the app (same application-id = streams cluster)&#xa;State stored in RocksDB locally, replicated via changelog topic to Kafka" vertex="1">
+          <mxGeometry height="70" width="900" x="115" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-3" parent="1" style="text;html=1;fillColor=#d5f5e3;strokeColor=#27ae60;align=left;fontStyle=1;fontSize=11;fontColor=#1e8449;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="✅ HAPPY PATH — HIGH_VALUE fraud detection flow" vertex="1">
+          <mxGeometry height="24" width="500" x="130" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-4" parent="1" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="KStream&#xa;transaction.initiated&#xa;──────────────────────&#xa;Key: accountId&#xa;Value: TransactionInitiatedEvent&#xa;(Avro, typed)&#xa;&#xa;builder.stream(&#xa;  &quot;transaction.initiated&quot;,&#xa;  Consumed.with(&#xa;    Serdes.String(),&#xa;    avroSerde&#xa;  ))" vertex="1">
+          <mxGeometry height="185" width="210" x="120" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-5" parent="1" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="GlobalKTable&#xa;account.created&#xa;──────────────────────────────&#xa;Key: accountId&#xa;Value: AccountEvent (Avro)&#xa;&#xa;EVERY instance gets ALL keys&#xa;(unlike KTable = partition-scoped)&#xa;&#xa;Loaded on startup by replaying&#xa;entire compacted topic&#xa;&#xa;Topic: cleanup.policy=compact&#xa;→ never loses account data&#xa;→ retains latest per key forever&#xa;&#xa;AccountSeeder publishes 3 accounts&#xa;on transaction-service startup" vertex="1">
+          <mxGeometry height="235" width="260" x="-110" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-6" parent="1" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Stream-Table Join&#xa;──────────────────────────────────────&#xa;transactions.join(accountTable,&#xa;  (key, tx) -&gt; tx.getAccountId(),&#xa;  (tx, account) -&gt; new EnrichedTransaction(tx, account)&#xa;)&#xa;&#xa;Result: EnrichedTransaction&#xa;  = transaction + account tier&#xa;&#xa;GlobalKTable join: any partition&#xa;can join with any account key&#xa;(KTable join: only same partition)" vertex="1">
+          <mxGeometry height="190" width="290" x="410" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-7" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Rule 1: HIGH_VALUE&#xa;──────────────────────────────────────────&#xa;enriched.filter((key, et) -&gt; {&#xa;  threshold = AccountTier&#xa;    .fromString(et.account.getTier())&#xa;    .getHighValueThreshold();&#xa;  // STANDARD=50k PREMIUM=1L ELITE=5L&#xa;  return et.tx.getAmount() &gt; threshold;&#xa;})&#xa;.mapValues(et -&gt; buildAlert(...))&#xa;.to(&quot;fraud.alert&quot;)&#xa;&#xa;↑ Needs GlobalKTable join for tier" vertex="1">
+          <mxGeometry height="190" width="280" x="765" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-8" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Rule 2: VELOCITY&#xa;──────────────────────────────────────────────────&#xa;transactions (raw stream, not enriched)&#xa;.groupByKey()&#xa;.windowedBy(&#xa;  SlidingWindows.ofTimeDifferenceAndGrace(&#xa;    Duration.ofMinutes(5),    ← window size&#xa;    Duration.ofSeconds(30)    ← grace for late events&#xa;  )&#xa;)&#xa;.count(Materialized.as(&quot;velocity-store&quot;))&#xa;.toStream()&#xa;.filter((k, count) -&gt; count &gt;= 3)&#xa;.map((k, count) -&gt; buildVelocityAlert())&#xa;.to(&quot;fraud.alert&quot;)&#xa;&#xa;Sliding window: each message gets its own&#xa;window of last 5min (catches any 3-in-5min)" vertex="1">
+          <mxGeometry height="250" width="310" x="1500" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-9" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Rule 3: RAPID_LARGE&#xa;────────────────────────────────────────────────────────────────────────────&#xa;transactions (raw stream)&#xa;.groupByKey()&#xa;.windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofHours(1), grace))&#xa;.aggregate(&#xa;  () -&gt; 0.0,                        ← initializer&#xa;  (key, tx, total) -&gt; total + tx.getAmount(), ← accumulator&#xa;  Materialized.as(&quot;hourly-spend-store&quot;)&#xa;)&#xa;.toStream()&#xa;.filter((k, total) -&gt; total &gt; 100_000.0)&#xa;.to(&quot;fraud.alert&quot;)&#xa;&#xa;Tumbling 1hr window: fixed [10:00-11:00][11:00-12:00] non-overlapping" vertex="1">
+          <mxGeometry height="225" width="355" x="1490" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-10" parent="1" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="fraud.alert topic&#xa;────────────────────────────────────────────────&#xa;FraudAlertEvent (Avro):&#xa;alertId, accountId, transactionId,&#xa;alertType (HIGH_VALUE/VELOCITY/RAPID_LARGE),&#xa;reason, amount, accountTier, detectedAt" vertex="1">
+          <mxGeometry height="110" width="310" x="750" y="960" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-11" edge="1" parent="1" source="INKo3yjzZIdx3rJwrc9k-4" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;fontSize=9;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="INKo3yjzZIdx3rJwrc9k-6" value="join">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-12" edge="1" parent="1" source="INKo3yjzZIdx3rJwrc9k-5" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#6c8ebf;fontSize=9;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="INKo3yjzZIdx3rJwrc9k-6" value="lookup">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-13" edge="1" parent="1" source="INKo3yjzZIdx3rJwrc9k-6" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#27ae60;fontSize=9;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="INKo3yjzZIdx3rJwrc9k-7" value="enriched">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-14" edge="1" parent="1" source="INKo3yjzZIdx3rJwrc9k-4" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;fontSize=9;exitX=0.5;exitY=1;entryX=0;entryY=0.5;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="INKo3yjzZIdx3rJwrc9k-8" value="raw tx">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-15" edge="1" parent="1" source="INKo3yjzZIdx3rJwrc9k-4" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;fontSize=9;exitX=0.5;exitY=1;entryX=0;entryY=0.5;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="INKo3yjzZIdx3rJwrc9k-9" value="raw tx">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-16" edge="1" parent="1" source="INKo3yjzZIdx3rJwrc9k-7" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;fontSize=9;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="INKo3yjzZIdx3rJwrc9k-10" value="HIGH_VALUE alert">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-17" edge="1" parent="1" source="INKo3yjzZIdx3rJwrc9k-8" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;fontSize=9;exitX=0;exitY=0.5;entryX=1;entryY=0.5;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="INKo3yjzZIdx3rJwrc9k-10" value="VELOCITY alert">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-18" edge="1" parent="1" source="INKo3yjzZIdx3rJwrc9k-9" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c0392b;fontSize=9;exitX=0;exitY=0.5;entryX=1;entryY=0;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="INKo3yjzZIdx3rJwrc9k-10" value="RAPID_LARGE alert">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-19" parent="1" style="text;html=1;fillColor=#fadbd8;strokeColor=#c0392b;align=left;fontStyle=1;fontSize=11;fontColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="❌ FAILURE PATH — EnrichedTransaction has no Serde (serde design mistake)" vertex="1">
+          <mxGeometry height="24" width="700" x="65" y="1380" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-20" parent="1" style="rounded=1;fillColor=#fadbd8;strokeColor=#c0392b;fontSize=10;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Wrong approach:&#xa;enriched.groupByKey()  ← type is EnrichedTransaction&#xa;→ Kafka Streams needs a Serde to serialize to RocksDB&#xa;→ EnrichedTransaction is a Java record, not Avro&#xa;→ No Serde exists → SerializationException&#xa;&#xa;Fix: Rule 2 + Rule 3 operate on RAW transactions (before join)&#xa;Only Rule 1 needs enrichment (account tier for threshold)&#xa;Raw transactions have SpecificAvroSerde → works fine" vertex="1">
+          <mxGeometry height="140" width="500" x="60" y="1440" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-21" parent="1" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="RocksDB State + Windowing&#xa;─────────────────────────────────────────────────────────────────────────────────────────────────────────&#xa;velocity-count-store: RocksDB on disk, backed by changelog topic in Kafka&#xa;hourly-spend-store:   RocksDB on disk, backed by changelog topic in Kafka&#xa;&#xa;On restart: replay changelog topic → rebuild RocksDB (can be slow for large state)&#xa;Exactly-once: StreamsConfig.EXACTLY_ONCE_V2 → atomic read+process+write+commit&#xa;&#xa;Window types used:&#xa;Sliding (velocity): each message creates own window of last 5min → catches any 3-in-5min pattern&#xa;Tumbling (spend):   fixed 1hr windows [10-11][11-12] → total per account per hour" vertex="1">
+          <mxGeometry height="140" width="900" x="610" y="1440" as="geometry" />
+        </mxCell>
+        <mxCell id="INKo3yjzZIdx3rJwrc9k-22" parent="1" style="rounded=1;fillColor=#e8f4fd;strokeColor=#2980b9;fontSize=11;align=left;whiteSpace=wrap;html=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Architecture Decision: GlobalKTable for account enrichment&#xa;KTable join: partition 0 consumer can only join with keys on partition 0 → misses other accounts&#xa;GlobalKTable: EVERY instance has ALL account keys → any tx can join with any account&#xa;Trade-off: GlobalKTable = full data in memory per instance → only for small datasets (account configs, tiers)&#xa;account.created uses cleanup.policy=compact → data never lost on retention → GlobalKTable always rebuildable" vertex="1">
+          <mxGeometry height="90" width="1100" x="60" y="1605" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="nCVz3te2e2bDkIwCoEH8" name="Page-6">
+    <mxGraphModel dx="1357" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="rMTppRQt1AwlNReHd2rY-1" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontColor=#666666;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Read left to right → Each phase builds on the previous. Each box = one concept you implemented." vertex="1">
+          <mxGeometry height="25" width="1250" x="350" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-2" parent="1" style="text;html=1;strokeColor=#0077b6;fillColor=#caf0f8;align=center;verticalAlign=middle;rounded=1;fontSize=11;fontStyle=1;fontColor=#0077b6;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="PHASE 1&#xa;Infrastructure" vertex="1">
+          <mxGeometry height="35" width="140" x="170" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-3" parent="1" style="text;html=1;strokeColor=#0077b6;fillColor=#caf0f8;align=center;verticalAlign=middle;rounded=1;fontSize=11;fontStyle=1;fontColor=#0077b6;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="PHASE 2&#xa;Producer/Consumer" vertex="1">
+          <mxGeometry height="35" width="140" x="325" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-4" parent="1" style="text;html=1;strokeColor=#0077b6;fillColor=#caf0f8;align=center;verticalAlign=middle;rounded=1;fontSize=11;fontStyle=1;fontColor=#0077b6;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="PHASE 3&#xa;Outbox Pattern" vertex="1">
+          <mxGeometry height="35" width="140" x="480" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-5" parent="1" style="text;html=1;strokeColor=#0077b6;fillColor=#caf0f8;align=center;verticalAlign=middle;rounded=1;fontSize=11;fontStyle=1;fontColor=#0077b6;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="PHASE 4&#xa;DLQ + Retry" vertex="1">
+          <mxGeometry height="35" width="140" x="635" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-6" parent="1" style="text;html=1;strokeColor=#0077b6;fillColor=#caf0f8;align=center;verticalAlign=middle;rounded=1;fontSize=11;fontStyle=1;fontColor=#0077b6;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="PHASE 5&#xa;Avro + Schema Registry" vertex="1">
+          <mxGeometry height="35" width="140" x="790" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-7" parent="1" style="text;html=1;strokeColor=#0077b6;fillColor=#caf0f8;align=center;verticalAlign=middle;rounded=1;fontSize=11;fontStyle=1;fontColor=#0077b6;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="PHASE 6&#xa;Kafka Streams" vertex="1">
+          <mxGeometry height="35" width="140" x="945" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-8" parent="1" style="text;html=1;strokeColor=#7b2d8b;fillColor=#e8d5f5;align=center;verticalAlign=middle;rounded=1;fontSize=11;fontStyle=1;fontColor=#7b2d8b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="KAFKA INTERNALS&#xa;(Theory you learned)" vertex="1">
+          <mxGeometry height="35" width="160" x="1140" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-9" parent="1" style="text;html=1;strokeColor=#c0392b;fillColor=#fadbd8;align=center;verticalAlign=middle;rounded=1;fontSize=11;fontStyle=1;fontColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="DEBUGGING&#xa;(Errors you hit)" vertex="1">
+          <mxGeometry height="35" width="160" x="1315" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-10" parent="1" style="text;html=1;strokeColor=#e67e22;fillColor=#fdebd0;align=center;verticalAlign=middle;rounded=1;fontSize=11;fontStyle=1;fontColor=#e67e22;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="WRONG MESSAGE&#xa;HANDLING" vertex="1">
+          <mxGeometry height="35" width="160" x="1490" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0f9ff;strokeColor=#0077b6;strokeWidth=2;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="" vertex="1">
+          <mxGeometry height="785" width="140" x="170" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-12" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#0077b6;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Docker Compose&lt;/b&gt;&#xa;&#xa;Runs all services&#xa;locally in containers&#xa;&#xa;docker compose up -d" vertex="1">
+          <mxGeometry height="80" width="120" x="180" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-13" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#0077b6;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Kafka Cluster&lt;/b&gt;&#xa;(KRaft — no ZooKeeper)&#xa;&#xa;kafka1: Controller+Broker&#xa;Port 9092 / 29092&#xa;&#xa;kafka2: Broker only&#xa;Port 9094 / 29094&#xa;&#xa;CLUSTER_ID must match" vertex="1">
+          <mxGeometry height="130" width="120" x="180" y="435" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#0077b6;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Schema Registry&lt;/b&gt;&#xa;Port 8081&#xa;&#xa;Stores Avro schemas&#xa;in _schemas topic&#xa;&#xa;REST API for&#xa;schema management" vertex="1">
+          <mxGeometry height="100" width="120" x="180" y="575" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-15" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#0077b6;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Kafka UI&lt;/b&gt;&#xa;Port 8080&#xa;&#xa;View topics, messages,&#xa;consumer groups, lag,&#xa;schemas visually" vertex="1">
+          <mxGeometry height="80" width="120" x="180" y="685" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-16" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#0077b6;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;PostgreSQL 16&lt;/b&gt;&#xa;Port 5432&#xa;&#xa;Tables: accounts,&#xa;transactions, outbox,&#xa;processed_events,&#xa;fraud_alerts&#xa;&#xa;init.sql runs once&#xa;on first boot" vertex="1">
+          <mxGeometry height="120" width="120" x="180" y="775" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-17" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#0077b6;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Topics Created&lt;/b&gt;&#xa;(manual — auto-create OFF)&#xa;&#xa;transaction.initiated (3p,r2)&#xa;transaction.completed (3p,r2)&#xa;transaction.failed (3p,r2)&#xa;fraud.alert (3p,r2)&#xa;transaction.dlq (1p,r2)&#xa;account.created (compact)" vertex="1">
+          <mxGeometry height="185" width="120" x="180" y="905" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-18" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0fff4;strokeColor=#2d6a4f;strokeWidth=2;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="" vertex="1">
+          <mxGeometry height="785" width="140" x="325" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-19" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#2d6a4f;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;transaction-service&lt;/b&gt;&#xa;Port 8090&#xa;&#xa;REST: POST /api/transactions&#xa;&#xa;Takes: accountId, amount,&#xa;type (DEBIT/CREDIT),&#xa;description" vertex="1">
+          <mxGeometry height="135" width="120" x="335" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-20" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#2d6a4f;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;KafkaProducer&lt;/b&gt;&#xa;Config (CRITICAL):&#xa;&#xa;acks=all&#xa;(wait for all ISR)&#xa;&#xa;enable-idempotence=true&#xa;(dedup retries)&#xa;&#xa;max.in.flight=5&#xa;(must be ≤5 for&#xa;idempotence to work)&#xa;&#xa;linger.ms=5&#xa;batch-size=32KB" vertex="1">
+          <mxGeometry height="215" width="120" x="335" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-21" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#2d6a4f;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Partition Key&lt;/b&gt;&#xa;= accountId&#xa;&#xa;hash(accountId) % 3&#xa;= partition number&#xa;&#xa;Same account →&#xa;same partition →&#xa;ordered per account&#xa;&#xa;No key = round-robin&#xa;= no ordering" vertex="1">
+          <mxGeometry height="175" width="120" x="335" y="715" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-22" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#2d6a4f;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Two KafkaTemplates&lt;/b&gt;&#xa;(Phase 2 → Phase 5)&#xa;&#xa;objectKafkaTemplate&#xa;→ JsonSerializer&#xa;→ typed Java objects&#xa;&#xa;stringKafkaTemplate&#xa;→ StringSerializer&#xa;→ raw JSON strings&#xa;(outbox payload)&#xa;&#xa;avroKafkaTemplate&#xa;→ KafkaAvroSerializer&#xa;→ binary Avro" vertex="1">
+          <mxGeometry height="190" width="120" x="335" y="910" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-23" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbf0;strokeColor=#d97706;strokeWidth=2;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="" vertex="1">
+          <mxGeometry height="785" width="140" x="480" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-24" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#d97706;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;The Problem&lt;/b&gt;&#xa;(Dual-Write)&#xa;&#xa;repo.save(tx)  ✓&#xa;kafka.send()   ✗ CRASH&#xa;&#xa;DB committed but&#xa;event lost forever&#xa;&#xa;@Transactional&#xa;does NOT help —&#xa;Kafka is outside&#xa;JpaTransactionManager" vertex="1">
+          <mxGeometry height="160" width="120" x="490" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-25" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#d97706;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;The Fix: Outbox&lt;/b&gt;&#xa;&#xa;Single DB transaction:&#xa;INSERT transactions&#xa;INSERT outbox&#xa;(published=false)&#xa;&#xa;Both or NEITHER&#xa;= atomicity guaranteed" vertex="1">
+          <mxGeometry height="120" width="120" x="490" y="575" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-26" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#d97706;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;OutboxPoller&lt;/b&gt;&#xa;@Scheduled(1000ms)&#xa;@Transactional&#xa;&#xa;SELECT * FROM outbox&#xa;WHERE published=false&#xa;FOR UPDATE SKIP LOCKED&#xa;&#xa;SKIP LOCKED = multiple&#xa;instances don&#39;t race&#xa;&#xa;send().get() = sync&#xa;marks published=true" vertex="1">
+          <mxGeometry height="215" width="120" x="490" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-27" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#d97706;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Outbox + Avro&lt;/b&gt;&#xa;(Phase 5 update)&#xa;&#xa;Problem: can&#39;t store&#xa;Avro binary in JSONB&#xa;&#xa;Fix: Base64 encode&#xa;Avro bytes → store&#xa;as text in outbox&#xa;&#xa;Poller: Base64 decode&#xa;→ send raw bytes&#xa;via bytesKafkaTemplate" vertex="1">
+          <mxGeometry height="160" width="120" x="490" y="960" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-28" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff5f5;strokeColor=#c0392b;strokeWidth=2;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="" vertex="1">
+          <mxGeometry height="785" width="140" x="635" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-29" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#c0392b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;notification-service&lt;/b&gt;&#xa;Port 8091&#xa;&#xa;Consumes:&#xa;transaction.initiated&#xa;&#xa;Group ID:&#xa;notification-service&#xa;&#xa;Concurrency: 3&#xa;(matches partitions)" vertex="1">
+          <mxGeometry height="145" width="120" x="645" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-30" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#c0392b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Manual Offset Commit&lt;/b&gt;&#xa;AckMode.MANUAL_IMMEDIATE&#xa;&#xa;Auto-commit = DANGER&#xa;fires on timer, not&#xa;after processing&#xa;&#xa;Manual = commit ONLY&#xa;after processing + DB&#xa;write both succeed&#xa;&#xa;At-least-once delivery&#xa;= need idempotency" vertex="1">
+          <mxGeometry height="225" width="120" x="645" y="495" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-31" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#c0392b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Retry + Backoff&lt;/b&gt;&#xa;&#xa;Attempt 1 → fail&#xa;Wait 1s (2^0 * 1000)&#xa;&#xa;Attempt 2 → fail&#xa;Wait 2s (2^1 * 1000)&#xa;&#xa;Attempt 3 → fail&#xa;Wait 4s (2^2 * 1000)&#xa;&#xa;Total: 7s before DLQ&#xa;Must be &lt; max.poll&#xa;.interval.ms (5min)" vertex="1">
+          <mxGeometry height="200" width="120" x="645" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-32" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#c0392b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Dead Letter Queue&lt;/b&gt;&#xa;topic: transaction.dlq&#xa;&#xa;After max retries:&#xa;1. send to DLQ&#xa;2. ack original offset&#xa;&#xa;MUST ack — without it&#xa;consumer stuck on same&#xa;offset forever&#xa;&#xa;DLQ = 1 partition&#xa;for ordered inspection" vertex="1">
+          <mxGeometry height="160" width="120" x="645" y="950" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-33" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f0ff;strokeColor=#7b2d8b;strokeWidth=2;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="" vertex="1">
+          <mxGeometry height="785" width="140" x="790" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-34" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7b2d8b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Why Avro?&lt;/b&gt;&#xa;&#xa;JSON = no contract&#xa;Producer changes field&#xa;→ all consumers break&#xa;silently at runtime&#xa;&#xa;Avro = enforced contract&#xa;Schema Registry rejects&#xa;breaking changes at&#xa;PUBLISH TIME&#xa;not runtime" vertex="1">
+          <mxGeometry height="155" width="120" x="800" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-35" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7b2d8b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Avro Wire Format&lt;/b&gt;&#xa;&#xa;[0x00][schema_id 4B][binary]&#xa;&#xa;0x00 = magic byte&#xa;schema_id = int from&#xa;Schema Registry&#xa;binary = Avro encoded&#xa;&#xa;NOT JSON — binary&#xa;Kafka UI needs SR&#xa;to decode it" vertex="1">
+          <mxGeometry height="165" width="120" x="800" y="495" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-36" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7b2d8b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Schema Evolution&lt;/b&gt;&#xa;&#xa;BACKWARD (default):&#xa;new schema reads old data&#xa;Remove field = OK ✓&#xa;(consumer ignores it)&#xa;&#xa;FULL (use this):&#xa;both directions&#xa;Remove required field&#xa;= REJECTED ✗&#xa;&#xa;Add optional field&#xa;with default = OK ✓" vertex="1">
+          <mxGeometry height="225" width="120" x="800" y="670" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-37" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7b2d8b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Code Generation&lt;/b&gt;&#xa;&#xa;.avsc schema file&#xa;→ avro-maven-plugin&#xa;→ Java class generated&#xa;in target/generated-sources&#xa;&#xa;No Lombok — Avro&#xa;generates its own&#xa;getters/setters/builder&#xa;&#xa;Use: Event.newBuilder()&#xa;  .setField(value)&#xa;  .build()" vertex="1">
+          <mxGeometry height="210" width="120" x="800" y="905" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-38" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0fff4;strokeColor=#166534;strokeWidth=2;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="" vertex="1">
+          <mxGeometry height="680" width="140" x="945" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-39" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#166534;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;fraud-detection-service&lt;/b&gt;&#xa;Port 8092&#xa;&#xa;Kafka Streams app&#xa;(not a consumer/producer&#xa;— it&#39;s a library)&#xa;&#xa;Reads: transaction.initiated&#xa;Reads: account.created&#xa;Writes: fraud.alert" vertex="1">
+          <mxGeometry height="120" width="120" x="955" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-40" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#166534;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;GlobalKTable&lt;/b&gt;&#xa;account.created topic&#xa;&#xa;Every instance gets&#xa;ALL account data&#xa;(unlike KTable which&#xa;is partition-scoped)&#xa;&#xa;Used for enrichment:&#xa;tx + account tier&#xa;&#xa;Topic must be&#xa;COMPACTED — never&#xa;loses account data" vertex="1">
+          <mxGeometry height="160" width="120" x="955" y="475" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-41" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#166534;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;3 Fraud Rules&lt;/b&gt;&#xa;&#xa;Rule 1: HIGH_VALUE&#xa;Amount &gt; tier threshold&#xa;STANDARD: 50k&#xa;PREMIUM: 1L&#xa;ELITE: 5L&#xa;(needs GlobalKTable join)&#xa;&#xa;Rule 2: VELOCITY&#xa;3+ tx in 5 min&#xa;Sliding window&#xa;&#xa;Rule 3: RAPID_LARGE&#xa;Total &gt; 1L in 1 hour&#xa;Tumbling window" vertex="1">
+          <mxGeometry height="200" width="120" x="955" y="645" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-42" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#166534;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;RocksDB State&lt;/b&gt;&#xa;&#xa;Windowed aggregations&#xa;stored locally in RocksDB&#xa;&#xa;Backed by changelog&#xa;topic in Kafka&#xa;&#xa;On restart: replays&#xa;changelog to rebuild&#xa;state (can be slow&#xa;for large state)&#xa;&#xa;Exactly-once:&#xa;EXACTLY_ONCE_V2" vertex="1">
+          <mxGeometry height="150" width="120" x="955" y="855" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-43" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdf4ff;strokeColor=#7b2d8b;strokeWidth=2;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="" vertex="1">
+          <mxGeometry height="855" width="160" x="1140" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-44" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#7b2d8b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Topic → Partition → Broker&lt;/b&gt;&#xa;&#xa;Topic = just a name (metadata)&#xa;Partition = actual data dir on disk&#xa;/kafka-logs/topic-N/&#xa;  .log (messages)&#xa;  .index (sparse offset map)&#xa;&#xa;Partition distributed across brokers&#xa;Leader: serves reads+writes&#xa;Follower: silent replica&#xa;&#xa;Ordering: per-partition ONLY" vertex="1">
+          <mxGeometry height="150" width="140" x="1150" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-45" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#7b2d8b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;ISR + Replication&lt;/b&gt;&#xa;&#xa;ISR = In-Sync Replicas&#xa;= caught up within&#xa;replica.lag.time.max.ms&#xa;&#xa;acks=all = wait for&#xa;ALL ISR (not all replicas)&#xa;&#xa;min.insync.replicas=2&#xa;= reject write if ISR&lt;2&#xa;&#xa;BOTH required together&#xa;One without other = weak" vertex="1">
+          <mxGeometry height="140" width="140" x="1150" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-46" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#7b2d8b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Consumer Groups&lt;/b&gt;&#xa;&#xa;1 partition → max 1&#xa;consumer per group&#xa;&#xa;3 partitions = max 3&#xa;parallel consumers&#xa;4th consumer = idle&#xa;&#xa;Rebalance = all pause&#xa;triggers on: join, leave,&#xa;partition change&#xa;&#xa;Static membership fixes&#xa;unnecessary rebalances" vertex="1">
+          <mxGeometry height="150" width="140" x="1150" y="655" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-47" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#7b2d8b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Offsets&lt;/b&gt;&#xa;&#xa;Stored in __consumer_offsets&#xa;topic — NOT in consumer&#xa;&#xa;Consumer dying = ZERO&#xa;offset loss&#xa;&#xa;Rebalance: new consumer&#xa;reads last committed&#xa;offset, resumes there&#xa;&#xa;At-least-once: messages&#xa;in-flight when crash&#xa;= redelivered on restart" vertex="1">
+          <mxGeometry height="195" width="140" x="1150" y="815" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-79" edge="1" parent="1" source="rMTppRQt1AwlNReHd2rY-48" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="rMTppRQt1AwlNReHd2rY-70" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-48" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#7b2d8b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Windowing Types&lt;/b&gt;&#xa;&#xa;Tumbling: fixed, no overlap&#xa;[0-1hr][1-2hr][2-3hr]&#xa;Each event in 1 window&#xa;&#xa;Hopping: fixed, overlap&#xa;Events in multiple windows&#xa;&#xa;Sliding: per-message window&#xa;of last N minutes&#xa;Best for velocity detection&#xa;&#xa;Session: gap-based, dynamic&#xa;Closes after inactivity" vertex="1">
+          <mxGeometry height="180" width="140" x="1150" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-49" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff5f5;strokeColor=#c0392b;strokeWidth=2;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="" vertex="1">
+          <mxGeometry height="680" width="160" x="1315" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-50" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#c0392b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;#1 Debug Rule&lt;/b&gt;&#xa;&#xa;Read stack trace&#xa;BOTTOM UP&#xa;&#xa;Last &quot;Caused by:&quot; =&#xa;root cause&#xa;&#xa;Everything above =&#xa;Spring/Kafka wrapper&#xa;= noise&#xa;&#xa;Act on the LAST&#xa;Caused by only" vertex="1">
+          <mxGeometry height="130" width="140" x="1325" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-51" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#c0392b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Error: Unknown magic byte&lt;/b&gt;&#xa;&#xa;Cause: consumer expects Avro&#xa;but reading old JSON message&#xa;&#xa;Fix: delete + recreate topic&#xa;clear outbox table&#xa;Add ErrorHandlingDeserializer" vertex="1">
+          <mxGeometry height="90" width="140" x="1325" y="485" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-52" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#c0392b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Error: Could not instantiate&#xa;com.fasterxml.jackson&#xa;.databind.JsonSerializer&lt;/b&gt;&#xa;&#xa;Cause: wrong import —&#xa;Jackson abstract class&#xa;&#xa;Fix: import&#xa;org.springframework.kafka&#xa;.support.serializer&#xa;.JsonSerializer" vertex="1">
+          <mxGeometry height="120" width="140" x="1325" y="585" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-53" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#c0392b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Error: column payload is jsonb&#xa;but expression is varchar&lt;/b&gt;&#xa;&#xa;Cause: Hibernate sends&#xa;String as VARCHAR&#xa;&#xa;Fix: add BOTH annotations:&#xa;@Column(columnDefinition=&quot;jsonb&quot;)&#xa;@JdbcTypeCode(SqlTypes.JSON)" vertex="1">
+          <mxGeometry height="110" width="140" x="1325" y="715" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-54" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#c0392b;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Error: required bean&#xa;KafkaTemplate not found&lt;/b&gt;&#xa;&#xa;Cause: two beans same raw&#xa;type — type erasure means&#xa;KafkaTemplate&lt;String,Object&gt;&#xa;and KafkaTemplate&lt;String,String&gt;&#xa;look the same at runtime&#xa;&#xa;Fix: @Bean(&quot;name&quot;) +&#xa;@Qualifier(&quot;name&quot;)&#xa;Write constructor manually&#xa;(remove @RequiredArgsConstructor)" vertex="1">
+          <mxGeometry height="150" width="140" x="1325" y="835" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-55" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef9f0;strokeColor=#e67e22;strokeWidth=2;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="" vertex="1">
+          <mxGeometry height="680" width="160" x="1490" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-56" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdebd0;strokeColor=#e67e22;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Type 1: Poison Pill&lt;/b&gt;&#xa;Message always fails&#xa;processing&#xa;&#xa;Symptom:&#xa;Lag grows forever&#xa;Consumer stuck at&#xa;same offset&#xa;&#xa;Fix: DLQ after N retries&#xa;+ ack original offset&#xa;&#xa;Without ack = infinite&#xa;loop on same message" vertex="1">
+          <mxGeometry height="150" width="140" x="1500" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-57" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdebd0;strokeColor=#e67e22;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Type 2: Wrong Format&lt;/b&gt;&#xa;Deserialization fails&#xa;before your code runs&#xa;&#xa;Symptom:&#xa;SerializationException&#xa;Consumer thread crashes&#xa;&#xa;Fix: ErrorHandlingDeserializer&#xa;wraps actual deserializer&#xa;passes error to listener&#xa;listener routes to DLQ" vertex="1">
+          <mxGeometry height="140" width="140" x="1500" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-58" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdebd0;strokeColor=#e67e22;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Type 3: Offset Out of Range&lt;/b&gt;&#xa;Consumer down longer&#xa;than retention period&#xa;&#xa;Symptom:&#xa;OffsetOutOfRangeException&#xa;Committed offset points&#xa;to deleted segment&#xa;&#xa;Fix options:&#xa;A) Increase retention&#xa;B) Seek to specific offset&#xa;C) CLI reset:&#xa;kafka-consumer-groups&#xa;--reset-offsets&#xa;--to-earliest&#xa;--execute" vertex="1">
+          <mxGeometry height="190" width="140" x="1500" y="655" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-59" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdebd0;strokeColor=#e67e22;fontSize=10;align=center;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;Monitor Consumer Lag&lt;/b&gt;&#xa;&#xa;Lag = latest offset -&#xa;committed offset&#xa;&#xa;Lag growing = problem&#xa;Lag = 0 = healthy&#xa;&#xa;CLI:&#xa;kafka-consumer-groups&#xa;--describe&#xa;--group notification-service&#xa;&#xa;Look at LAG column&#xa;This is your #1&#xa;health metric" vertex="1">
+          <mxGeometry height="150" width="140" x="1500" y="855" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-60" edge="1" parent="1" source="rMTppRQt1AwlNReHd2rY-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=0;entryX=0.5;entryY=1;fontSize=9;fontColor=#333333;strokeColor=#2d6a4f;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="rMTppRQt1AwlNReHd2rY-25" value="POST /api/transactions">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-61" edge="1" parent="1" source="rMTppRQt1AwlNReHd2rY-37" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=9;fontColor=#7b2d8b;strokeColor=#7b2d8b;dashed=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="rMTppRQt1AwlNReHd2rY-35" value="Avro binary&#xa;(magic byte + schema_id + payload)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-62" edge="1" parent="1" source="rMTppRQt1AwlNReHd2rY-35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=0;entryX=0.5;entryY=1;fontSize=9;fontColor=#c0392b;strokeColor=#c0392b;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="rMTppRQt1AwlNReHd2rY-29" value="KafkaAvroDeserializer&#xa;→ typed object">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-63" edge="1" parent="1" source="rMTppRQt1AwlNReHd2rY-35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=9;fontColor=#166534;strokeColor=#166534;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" target="rMTppRQt1AwlNReHd2rY-39" value="Kafka Streams&#xa;reads same topic">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-64" parent="1" style="text;html=1;strokeColor=none;fillColor=#1a1a2e;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=13;fontStyle=1;fontColor=#ffffff;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="SERVICE CONTRACTS (What each service publishes and consumes)" vertex="1">
+          <mxGeometry height="30" width="780" x="175" y="1200" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-65" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#2d6a4f;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;transaction-service (8090)&lt;/b&gt;&#xa;&#xa;PRODUCES → transaction.initiated&#xa;Key: accountId&#xa;Value: TransactionInitiatedEvent (Avro)&#xa;Fields: eventId, transactionId, accountId,&#xa;amount, currency, type, description,&#xa;occurredAt, merchantId (optional)&#xa;&#xa;PRODUCES → account.created (on startup)&#xa;Key: accountId&#xa;Value: AccountEvent (Avro)&#xa;Fields: accountId, accountNumber,&#xa;ownerName, tier, status&#xa;&#xa;DB WRITES: transactions + outbox (atomic)" vertex="1">
+          <mxGeometry height="200" width="240" x="170" y="1230" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-66" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#c0392b;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;notification-service (8091)&lt;/b&gt;&#xa;&#xa;CONSUMES ← transaction.initiated&#xa;Group: notification-service&#xa;Deserializer: KafkaAvroDeserializer&#xa;specific.avro.reader=true&#xa;→ typed TransactionInitiatedEvent&#xa;&#xa;PRODUCES → transaction.dlq&#xa;On: max retries exceeded&#xa;&#xa;DB READS/WRITES: processed_events&#xa;(idempotency guard — UUID PK)&#xa;&#xa;DELIVERY: at-least-once&#xa;+ idempotent consumer" vertex="1">
+          <mxGeometry height="200" width="240" x="425" y="1230" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-67" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#166534;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;fraud-detection-service (8092)&lt;/b&gt;&#xa;&#xa;CONSUMES (KStream) ← transaction.initiated&#xa;CONSUMES (GlobalKTable) ← account.created&#xa;&#xa;PRODUCES → fraud.alert&#xa;Key: accountId&#xa;Value: FraudAlertEvent (Avro)&#xa;Fields: alertId, accountId, transactionId,&#xa;alertType, reason, amount,&#xa;accountTier, detectedAt&#xa;&#xa;ALERT TYPES:&#xa;HIGH_VALUE: amount &gt; tier threshold&#xa;VELOCITY: 3+ tx in 5min (sliding window)&#xa;RAPID_LARGE: total &gt; 1L in 1hr (tumbling)" vertex="1">
+          <mxGeometry height="200" width="270" x="675" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-68" parent="1" style="text;html=1;strokeColor=none;fillColor=#1a1a2e;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=13;fontStyle=1;fontColor=#ffffff;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="SCHEMA REGISTRY (http://localhost:8081) — Registered Subjects" vertex="1">
+          <mxGeometry height="30" width="685" x="965" y="1200" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-69" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7b2d8b;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;transaction.initiated-value&lt;/b&gt;&#xa;&#xa;Version 1 (original):&#xa;eventId, transactionId, accountId,&#xa;amount, currency, type,&#xa;description (optional), occurredAt&#xa;&#xa;Version 2 (Phase 5 update):&#xa;+ merchantId (optional, default=null)&#xa;&#xa;Compatibility: FULL&#xa;(both backward AND forward)&#xa;&#xa;Breaking change test:&#xa;Remove amount → REJECTED ✗&#xa;Add optional field → ACCEPTED ✓" vertex="1">
+          <mxGeometry height="200" width="220" x="965" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-70" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7b2d8b;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;account.created-value&lt;/b&gt;&#xa;&#xa;Version 1:&#xa;accountId, accountNumber,&#xa;ownerName, tier, status&#xa;&#xa;Topic config:&#xa;cleanup.policy=compact&#xa;(never loses account data)&#xa;&#xa;Compaction keeps only&#xa;latest message per key&#xa;= GlobalKTable can always&#xa;rebuild full account state&#xa;on restart" vertex="1">
+          <mxGeometry height="200" width="220" x="1210" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-71" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7b2d8b;fontSize=10;align=left;verticalAlign=top;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;b&gt;fraud.alert-value&lt;/b&gt;&#xa;&#xa;Version 1:&#xa;alertId, accountId, transactionId,&#xa;alertType, reason, amount,&#xa;accountTier, detectedAt&#xa;&#xa;alertType values:&#xa;HIGH_VALUE&#xa;VELOCITY&#xa;RAPID_LARGE&#xa;&#xa;detectedAt = epoch millis&#xa;(Avro has no Instant type)&#xa;Convert: Instant.ofEpochMilli()" vertex="1">
+          <mxGeometry height="200" width="225" x="1440" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-72" parent="1" style="text;html=1;strokeColor=#0077b6;fillColor=#caf0f8;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#0077b6;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="LEARNING PROGRESSION →" vertex="1">
+          <mxGeometry height="30" width="885" x="185" y="1470" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-73" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="1. Run docker compose&#xa;→ see containers start" vertex="1">
+          <mxGeometry height="35" width="130" x="170" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-74" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="2. Send HTTP request&#xa;→ see Kafka message" vertex="1">
+          <mxGeometry height="35" width="130" x="310" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-75" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="3. Kill Kafka → tx saved&#xa;→ Kafka recovers → delivered" vertex="1">
+          <mxGeometry height="35" width="130" x="465" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-76" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="4. Send .99 amount&#xa;→ see DLQ message" vertex="1">
+          <mxGeometry height="35" width="130" x="620" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-77" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="5. Check Schema Registry&#xa;→ see 2 versions registered" vertex="1">
+          <mxGeometry height="35" width="130" x="765" y="1520" as="geometry" />
+        </mxCell>
+        <mxCell id="rMTppRQt1AwlNReHd2rY-78" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="6. Send 150k transaction&#xa;→ see fraud.alert fired" vertex="1">
+          <mxGeometry height="35" width="130" x="910" y="1520" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
