@@ -60,7 +60,7 @@ The key idea: **every banking event is durable, ordered, schema-safe, and eventu
 
 ### Who is this document for?
 
-You (Nishanth) — this is written as a working reference for a Kafka-focused learning project, covering *why* each pattern exists, the failure it prevents, and where to find/extend it. Written so future-you (or anyone picking this repo up cold) can trace data flow end-to-end without re-deriving it from the code.
+This is written as a working reference for a Kafka-focused learning project, covering *why* each pattern exists, the failure it prevents, and where to find/extend it. Written so future-you (or anyone picking this repo up cold) can trace data flow end-to-end without re-deriving it from the code.
 
 ---
 
