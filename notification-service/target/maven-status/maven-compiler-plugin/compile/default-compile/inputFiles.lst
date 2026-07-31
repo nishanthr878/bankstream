@@ -1,5 +1,6 @@
 /home/nishanth/Projects/bankstream/notification-service/src/main/java/com/bankstream/notification/dlq/DlqProducer.java
 /home/nishanth/Projects/bankstream/notification-service/src/main/java/com/bankstream/notification/repository/ProcessedEventRepository.java
+/home/nishanth/Projects/bankstream/notification-service/src/main/java/com/bankstream/notification/monitoring/MetricsConfig.java
 /home/nishanth/Projects/bankstream/notification-service/src/main/java/com/bankstream/notification/config/KafkaConsumerConfig.java
 /home/nishanth/Projects/bankstream/notification-service/target/generated-sources/avro/com/bankstream/transaction/event/avro/TransactionInitiatedEvent.java
 /home/nishanth/Projects/bankstream/notification-service/src/main/java/com/bankstream/notification/consumer/TransactionConsumer.java

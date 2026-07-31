@@ -3,6 +3,7 @@ com/bankstream/transaction/domain/TransactionStatus.class
 com/bankstream/transaction/event/TransactionInitiatedEvent.class
 com/bankstream/account/event/avro/AccountEvent.class
 com/bankstream/transaction/seeder/AccountSeeder.class
+com/bankstream/transaction/monitoring/MetricsConfig.class
 com/bankstream/transaction/event/avro/TransactionInitiatedEvent.class
 com/bankstream/transaction/config/KafkaProducerConfig.class
 com/bankstream/transaction/controller/TransactionController.class

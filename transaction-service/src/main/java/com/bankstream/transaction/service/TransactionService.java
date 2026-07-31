@@ -10,7 +10,10 @@ import com.bankstream.transaction.repository.OutboxRepository;
 import com.bankstream.transaction.repository.TransactionRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,15 +31,21 @@ public class TransactionService {
     private final OutboxRepository outboxRepository;
     private final TransactionProducer transactionProducer;
     private final KafkaAvroSerializer kafkaAvroSerializer;
+    private final Counter transactionInitiatedCounter;
+    private final Timer transactionTimer;
 
     public TransactionService(TransactionRepository transactionRepository,
                               OutboxRepository outboxRepository,
                               TransactionProducer transactionProducer,
-                              KafkaAvroSerializer kafkaAvroSerializer) {
+                              KafkaAvroSerializer kafkaAvroSerializer,
+                              @Qualifier("transactionInitiatedCounter") Counter transactionInitiatedCounter,
+                              Timer transactionTimer) {
         this.transactionRepository = transactionRepository;
         this.outboxRepository = outboxRepository;
         this.transactionProducer = transactionProducer;
         this.kafkaAvroSerializer = kafkaAvroSerializer;
+        this.transactionInitiatedCounter = transactionInitiatedCounter;
+        this.transactionTimer = transactionTimer;
     }
 
     @Transactional
@@ -44,6 +53,7 @@ public class TransactionService {
                                            BigDecimal amount,
                                            TransactionType type,
                                            String description) {
+        long start = System.nanoTime();
         // Step 1: save business record
         Transaction transaction = Transaction.builder()
                 .accountId(accountId)
@@ -109,6 +119,10 @@ public class TransactionService {
                 .build();
 
         outboxRepository.save(outboxEntry);
+
+        transactionInitiatedCounter.increment();
+
+        transactionProducer.publishTransactionInitiated(avroEvent);
 
         log.debug("Wrote outbox entry for transaction {}", transaction.getId());
 

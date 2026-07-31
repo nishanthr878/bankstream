@@ -2,6 +2,7 @@ package com.bankstream.transaction.outbox;
 
 import com.bankstream.transaction.domain.Outbox;
 import com.bankstream.transaction.repository.OutboxRepository;
+import io.micrometer.core.instrument.Counter;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,12 +24,18 @@ public class OutboxPoller {
     // Use String template - payload is already serialized JSON string
     // Using Object template would double-serialize it
     private final KafkaTemplate<String, byte[]> bytesKafkaTemplate;
+    private final Counter outboxPublishedCounter;
+    private final Counter outboxFailedCounter;
 
     public OutboxPoller(
             OutboxRepository outboxRepository,
-            @Qualifier("bytesKafkaTemplate") KafkaTemplate<String, byte[]> bytesKafkaTemplate) {
+            @Qualifier("bytesKafkaTemplate") KafkaTemplate<String, byte[]> bytesKafkaTemplate,
+            @Qualifier("outboxPublishedCounter") Counter outboxPublishedCounter,
+            @Qualifier("outboxFailedCounter") Counter outboxFailedCounter) {
         this.outboxRepository = outboxRepository;
         this.bytesKafkaTemplate = bytesKafkaTemplate;
+        this.outboxPublishedCounter = outboxPublishedCounter;
+        this.outboxFailedCounter = outboxFailedCounter;
     }
 
     private static final int MAX_RETRY = 5;
@@ -65,12 +72,14 @@ public class OutboxPoller {
 
                 log.debug("Published outbox entry {} to topic {}",
                         entry.getId(), entry.getTopic());
+                outboxPublishedCounter.increment();
 
             } catch (Exception e) {
                 // Kafka unavailable or timeout
                 entry.setRetryCount(entry.getRetryCount() + 1);
                 entry.setLastError(e.getMessage());
                 outboxRepository.save(entry);
+                outboxFailedCounter.increment();
 
                 if (entry.getRetryCount() >= MAX_RETRY) {
                     log.error("Outbox entry {} failed {} times, needs manual intervention",

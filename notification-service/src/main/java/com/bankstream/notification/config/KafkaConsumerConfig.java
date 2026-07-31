@@ -2,6 +2,7 @@ package com.bankstream.notification.config;
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.MicrometerConsumerListener;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 
@@ -27,6 +29,14 @@ public class KafkaConsumerConfig {
 
     @Value("${spring.kafka.consumer.properties.schema.registry.url}")
     private String schemaRegistryUrl;
+
+    // Injected at class level — consumerFactory() stays no-arg
+    // so kafkaListenerContainerFactory() can call it without arguments
+    private final MeterRegistry meterRegistry;
+
+    public KafkaConsumerConfig(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
 
     @Bean
     public ConsumerFactory<String, Object> consumerFactory() {
@@ -50,7 +60,13 @@ public class KafkaConsumerConfig {
         props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
         props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
 
-        return new DefaultKafkaConsumerFactory<>(props);
+
+        DefaultKafkaConsumerFactory<String, Object> factory = new DefaultKafkaConsumerFactory<>(props);
+
+        // Bind Kafka consumer metrics to Micrometer
+        // Enables kafka_consumer_fetch_manager_records_lag metric
+        factory.addListener(new MicrometerConsumerListener<>(meterRegistry));
+        return factory;
     }
 
     @Bean

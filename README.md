@@ -12,6 +12,7 @@ A real-time banking event processing system built to learn and implement Kafka c
 | 4 | Dead letter queue — retry with exponential backoff, poison pill handling | ✅ Done |
 | 5 | Avro + Schema Registry — schema evolution, backward compatibility | ✅ Done |
 | 6 | Kafka Streams — aggregations, windowing, stream-table joins, fraud detection | ✅ Done |
+| A | Observability — Prometheus + Grafana + custom metrics + consumer lag | ✅ Done |
 
 ## Tech stack
 

@@ -54,6 +54,22 @@
             <artifactId>kafka-avro-serializer</artifactId>
             <version>7.6.0</version>
         </dependency>
+        <!-- Spring Boot Actuator — exposes /actuator/prometheus endpoint -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Micrometer Prometheus registry — formats metrics for Prometheus -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <!-- Enables kafka_consumer_* metrics in Micrometer -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+        </dependency>
     </dependencies>
 
 

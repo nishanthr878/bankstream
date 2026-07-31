@@ -5,6 +5,7 @@ import com.bankstream.notification.dlq.DlqProducer;
 import com.bankstream.notification.domain.ProcessedEvent;
 import com.bankstream.notification.repository.ProcessedEventRepository;
 import com.bankstream.notification.service.NotificationService;
+import io.micrometer.core.instrument.Counter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -25,13 +26,22 @@ public class TransactionConsumer {
     private final NotificationService notificationService;
     private final ProcessedEventRepository processedEventRepository;
     private final DlqProducer dlqProducer;
+    private final Counter notificationSentCounter;
+    private final Counter dlqRoutedCounter;
+    private final Counter duplicateEventsCounter;
 
     public TransactionConsumer(NotificationService notificationService,
                                ProcessedEventRepository processedEventRepository,
-                               DlqProducer dlqProducer) {
+                               DlqProducer dlqProducer,
+                               Counter notificationSentCounter,
+                               Counter dlqRoutedCounter,
+                               Counter duplicateEventsCounter) {
         this.notificationService = notificationService;
         this.processedEventRepository = processedEventRepository;
         this.dlqProducer = dlqProducer;
+        this.notificationSentCounter = notificationSentCounter;
+        this.dlqRoutedCounter = dlqRoutedCounter;
+        this.duplicateEventsCounter = duplicateEventsCounter;
     }
 
     @KafkaListener(
@@ -51,6 +61,7 @@ public class TransactionConsumer {
 
         // With Avro + specific.avro.reader=true, value is already a typed object
         if (!(value instanceof TransactionInitiatedEvent)) {
+            dlqRoutedCounter.increment();
             log.error("Unexpected message type: {}, routing to DLQ", value.getClass());
             dlqProducer.sendToDlq(key, value, "Unexpected message type");
             acknowledgment.acknowledge();
@@ -66,6 +77,7 @@ public class TransactionConsumer {
         if (processedEventRepository.existsById(eventId)) {
             log.info("Duplicate event {} detected, skipping", eventId);
             acknowledgment.acknowledge();
+            duplicateEventsCounter.increment();
             return;
         }
 
@@ -75,7 +87,6 @@ public class TransactionConsumer {
             try {
                 // Pass typed Avro object directly — no more map casting
                 notificationService.sendTransactionNotification(event);
-
                 try {
                     processedEventRepository.save(
                             ProcessedEvent.builder()
@@ -84,8 +95,10 @@ public class TransactionConsumer {
                                     .processedAt(Instant.now())
                                     .build()
                     );
+                    notificationSentCounter.increment();
                 } catch (DataIntegrityViolationException e) {
                     log.info("Race condition: event {} already processed", eventId);
+                    notificationSentCounter.increment();
                 }
 
                 acknowledgment.acknowledge();
@@ -116,6 +129,7 @@ public class TransactionConsumer {
         log.error("All {} retries exhausted for event {}, routing to DLQ",
                 MAX_RETRIES, eventId);
         dlqProducer.sendToDlq(key, value, lastException.getMessage());
+        dlqRoutedCounter.increment();
         acknowledgment.acknowledge();
     }
 }

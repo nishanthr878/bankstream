@@ -1,4 +1,5 @@
 /home/nishanth/Projects/bankstream/transaction-service/src/main/java/com/bankstream/transaction/event/TransactionInitiatedEvent.java
+/home/nishanth/Projects/bankstream/transaction-service/src/main/java/com/bankstream/transaction/monitoring/MetricsConfig.java
 /home/nishanth/Projects/bankstream/transaction-service/src/main/java/com/bankstream/transaction/repository/OutboxRepository.java
 /home/nishanth/Projects/bankstream/transaction-service/src/main/java/com/bankstream/transaction/config/KafkaProducerConfig.java
 /home/nishanth/Projects/bankstream/transaction-service/src/main/java/com/bankstream/transaction/seeder/AccountSeeder.java
